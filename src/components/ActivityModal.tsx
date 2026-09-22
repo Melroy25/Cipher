@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Calendar, ChevronLeft, ChevronRight, Image as ImageIcon, Sparkles } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.tsx";
 
@@ -68,8 +69,8 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
         "Hands-on technical session hosted by the Cipher Student Association, providing practical exposure and deep-dive problem-solving for CSE students.",
       ];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/70 dark:bg-black/85 backdrop-blur-md overflow-y-auto animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-black/70 dark:bg-black/85 backdrop-blur-md overflow-y-auto animate-fadeIn">
       {/* Backdrop Click */}
       <div className="fixed inset-0" onClick={onClose} />
 
@@ -203,6 +204,7 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
