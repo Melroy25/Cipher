@@ -26,9 +26,8 @@ server/firebase-service-account.json
 *.pem
 *.key
 
-# Server uploads
-server/public/uploads/*
-!server/public/uploads/.gitkeep
+# Server uploads (tracked to preserve database-referenced media across clones)
+# server/public/uploads/
 
 # Deployment & cloud caches
 .vercel/
