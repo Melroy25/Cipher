@@ -1,0 +1,12 @@
+.cipher-particles {
+  display: block;
+  width: 100%;
+  /* Snug fit on mobile (~110px) to remove empty dead space; scales to 280px on desktop */
+  height: clamp(110px, 20vw, 280px);
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: default;
+  touch-action: pan-y;
+}

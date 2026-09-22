@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String   @default("Administrator")
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model TeamMember {
+  id           String   @id @default(cuid())
+  name         String
+  role         String
+  department   String   @default("Computer Science & Engineering")
+  teamYear     String   @default("2025-26")
+  bio          String?
+  photoUrl     String
+  modalPhotoUrl String?
+  instagram    String?
+  github       String?
+  linkedin     String?
+  otherUrl     String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  shortDesc    String
+  description  String?
+  imageUrl     String?
+  technologies String   @default("[]") // JSON string of array
+  category     String   @default("General")
+  githubUrl    String?
+  demoUrl      String?
+  teamMembers  String?
+  publishedAt  DateTime @default(now())
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Event {
+  id              String       @id @default(cuid())
+  title           String
+  tag             String       @default("EVENT")
+  dateTag         String       @default("UPCOMING")
+  cardSub         String?
+  subTitle        String?
+  slug            String?
+  shortDesc       String
+  description     String?
+  fullDescription String?      // JSON string of array or multiline text
+  posterUrl       String?
+  eventDate       DateTime?
+  startTime       String?
+  endTime         String?
+  venue           String?
+  registrationUrl String?
+  category        String       @default("Workshop")
+  status          String       @default("UPCOMING") // UPCOMING, COMPLETED, CANCELLED
+  displayOrder    Int          @default(0)
+  isPublished     Boolean      @default(true)
+  featuredOnHome  Boolean      @default(true)
+  slides          EventSlide[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model EventSlide {
+  id        String   @id @default(cuid())
+  eventId   String
+  imageUrl  String
+  order     Int      @default(0)
+  caption   String?
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
+
+model Activity {
+  id           String   @id @default(cuid())
+  numberId     String?  // "01", "02", etc.
+  title        String
+  description  String?
+  photoUrl     String?
+  date         String?
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Domain {
+  id             String   @id @default(cuid())
+  name           String
+  sessionsLabel  String   @default("0 SESSIONS")
+  description    String
+  iconName       String   @default("Code2")
+  additionalInfo String?
+  displayOrder   Int      @default(0)
+  isPublished    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  section   String   @default("general") // hero, about, footer, etc.
+  label     String   @default("Content Item")
+  type      String   @default("text")    // text, textarea, url
+  updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  category    String   @default("GENERAL")
+  summary     String
+  content     String   @default("[]") // JSON array of paragraph strings
+  coverImage  String?
+  author      String   @default("Cipher Team")
+  authorRole  String   @default("Cipher Core")
+  readTime    String   @default("3 MIN READ")
+  publishedAt DateTime @default(now())
+  displayOrder Int     @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  url       String
+  publicId  String?
+  filename  String
+  format    String?
+  sizeBytes Int?
+  createdAt DateTime @default(now())
+}
+
+model Contributor {
+  id           String   @id @default(cuid())
+  name         String
+  role         String   // e.g. "Technical Coordinator", "Event Host", "Volunteer Lead"
+  eventName    String   // e.g. "Prompt Ops-2K26", "Lumière Gala"
+  department   String   @default("Computer Science & Engineering")
+  batch        String?  // e.g. "3rd Year CSE", "Batch 2026"
+  photoUrl     String?
+  modalPhotoUrl String?
+  bio          String?
+  github       String?
+  linkedin     String?
+  instagram    String?
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model JoinApplication {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  usn        String?
+  semester   String?
+  domain     String?  // Technical, Design, Media, Events
+  reason     String
+  skills     String?
+  status     String   @default("PENDING") // PENDING, REVIEWED, ACCEPTED, REJECTED
+  adminNotes String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  status    String   @default("UNREAD") // UNREAD, READ, REPLIED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+

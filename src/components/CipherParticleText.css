@@ -1,0 +1,26 @@
+.cipher-particle-container {
+  position: relative;
+
+  width: 100%;
+  height: clamp(180px, 22vw, 260px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  pointer-events: auto;
+}
+
+.cipher-particle-canvas {
+  display: block;
+
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  pointer-events: auto;
+}
