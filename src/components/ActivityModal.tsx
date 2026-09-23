@@ -199,7 +199,7 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
 
                 {/* ── Swipeable Photo Viewer (Tap or Swipe to slide) ── */}
                 <div
-                  className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 flex items-center justify-center select-none"
+                  className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 select-none"
                   style={{ cursor: totalPhotos > 1 ? "pointer" : "default" }}
                   onPointerDown={handlePointerDown}
                   onPointerMove={handlePointerMove}
@@ -207,17 +207,18 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
                   onPointerCancel={handlePointerUp}
                   title={totalPhotos > 1 ? "Click or swipe to see next photo" : undefined}
                 >
-                  {/* Slide strip: smooth translateX sliding animation */}
-                  <div
-                    className="absolute inset-0 flex"
-                    style={{
-                      transform: `translateX(calc(-${currentSlide * 100}% + ${dragOffset}px))`,
-                      transition: isDragging.current ? "none" : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
-                      width: `${totalPhotos * 100}%`,
-                    }}
-                  >
+                  {/* Slide track with smooth cubic-bezier transition */}
+                  <div className="absolute inset-0 overflow-hidden">
                     {photos.map((url, i) => (
-                      <div key={i} className="relative flex-shrink-0 h-full" style={{ width: `${100 / totalPhotos}%` }}>
+                      <div
+                        key={i}
+                        className="absolute inset-0 w-full h-full"
+                        style={{
+                          transform: `translateX(calc(${(i - currentSlide) * 100}% + ${dragOffset}px))`,
+                          transition: isDragging.current ? "none" : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+                          visibility: Math.abs(i - currentSlide) <= 1 ? "visible" : "hidden",
+                        }}
+                      >
                         <img
                           src={url}
                           alt={`${activity.title} photo ${i + 1}`}
@@ -256,11 +257,6 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
                       >
                         <ChevronRight className="w-4 h-4 text-[#00ff66]" />
                       </button>
-
-                      {/* Swipe hint label */}
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/50 tracking-widest pointer-events-none select-none bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
-                        TAP OR SWIPE TO EXPLORE →
-                      </div>
                     </>
                   )}
                 </div>

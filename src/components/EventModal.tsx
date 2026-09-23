@@ -176,16 +176,17 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
                 title={totalSlides > 1 ? "Click or swipe to see next photo" : undefined}
               >
                 {/* Horizontal slide track with smooth cubic-bezier transition */}
-                <div
-                  className="absolute inset-0 flex"
-                  style={{
-                    transform: `translateX(calc(-${currentSlide * 100}% + ${dragOffset}px))`,
-                    transition: isDragging.current ? "none" : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
-                    width: `${totalSlides * 100}%`,
-                  }}
-                >
+                <div className="absolute inset-0 overflow-hidden">
                   {event.slides.map((url, i) => (
-                    <div key={i} className="relative flex-shrink-0 h-full" style={{ width: `${100 / totalSlides}%` }}>
+                    <div
+                      key={i}
+                      className="absolute inset-0 w-full h-full"
+                      style={{
+                        transform: `translateX(calc(${(i - currentSlide) * 100}% + ${dragOffset}px))`,
+                        transition: isDragging.current ? "none" : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+                        visibility: Math.abs(i - currentSlide) <= 1 ? "visible" : "hidden",
+                      }}
+                    >
                       <img
                         src={url}
                         alt={`${event.title} slide ${i + 1}`}
@@ -200,7 +201,7 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
                 </div>
 
                 {/* Bottom Overlay Badge */}
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent text-white pointer-events-none">
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent text-white pointer-events-none z-10">
                   <span className="inline-block font-mono text-[10px] tracking-widest text-[#00ff66] bg-[#00ff66]/15 border border-[#00ff66]/30 px-2 py-0.5 rounded mb-1.5">
                     {event.dateTag}
                   </span>
@@ -211,13 +212,6 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
                     {event.cardSub}
                   </div>
                 </div>
-
-                {/* Swipe hint */}
-                {totalSlides > 1 && (
-                  <div className="absolute top-2 right-2 font-mono text-[9px] text-[#00ff66]/80 tracking-widest pointer-events-none select-none bg-black/50 px-2 py-0.5 rounded backdrop-blur-sm border border-[#00ff66]/20">
-                    TAP OR SWIPE →
-                  </div>
-                )}
               </div>
 
             </div>
@@ -235,9 +229,6 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
               <div className="text-center">
                 <div className="font-bold text-sm tracking-widest font-mono">
                   {String(currentSlide + 1).padStart(2, '0')} / {String(totalSlides).padStart(2, '0')}
-                </div>
-                <div className="text-[10px] text-gray-500 dark:text-[#88aa90] tracking-wider mt-0.5 font-sans">
-                  SWIPE TO EXPLORE &rarr;
                 </div>
               </div>
 
