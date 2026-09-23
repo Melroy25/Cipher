@@ -1,3 +1,54 @@
+# Cipher Build Blazer — Phase 2
+
+Live build phase for **Cipher (CSE Association)'s** track of the Build Blazer event at SJEC.
+
+This repo is the starting point for Phase 2, where third-year teams fork it and build the winning design into a live, deployed website.
+
+## How this works
+
+1. **Fork** this repository into your own GitHub account.
+2. Clone your fork locally.
+3. Implement the winning Figma design assigned to your team.
+4. Commit early and often — the process matters as much as the result.
+5. Deploy your build (Vercel, Netlify, GitHub Pages, or similar).
+6. Submit your fork link + live deployment link before the deadline.
+
+## Team
+
+| Role | Name |
+|------|------|
+| Team Lead | Melroy Almeida |
+| Team Members | Melroy Almeida |
+
+## Design reference
+
+Winning Figma design implementation for **Cipher (CSE Association) Track** — Build Blazer Phase 2.
+
+## Tech stack
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Canvas Particle Physics
+- **Backend**: Node.js, Express.js (ESM), TypeScript, Prisma ORM
+- **Database**: PostgreSQL (Neon Serverless)
+- **Authentication**: Firebase Authentication (Google OAuth 2.0 + Firebase Admin SDK)
+- **Deployment**: Vercel (Frontend SPA & Admin Dashboard) + Render (API Backend)
+
+## Deployment
+
+- **Live Website**: [https://cipher-website-beta.vercel.app](https://cipher-website-beta.vercel.app)
+- **Admin CMS Dashboard**: [https://cipher-admin-rho.vercel.app](https://cipher-admin-rho.vercel.app)
+- **Live Backend API**: [https://cipher-wccb.onrender.com](https://cipher-wccb.onrender.com)
+
+## Rules
+
+- Fork, don't clone-and-push directly to this repo.
+- Stick to the assigned Figma design as closely as possible.
+- Submit via pull request or the link-submission form (whichever the organizers specify).
+
+---
+Organized by **Cipher (CSE Association)**, SJEC, in collaboration with **AgentBlazer Club**.
+
+---
+
 # ⚡ CIPHER — Official Website & Admin CMS
 
 > The official digital portal and content management system for **CIPHER**, the premier Computer Science student organization at St Joseph Engineering College (SJEC).
@@ -11,7 +62,7 @@ CIPHER Website is a full-stack, cyber-themed digital platform featuring:
 - **Interactive Cyber Hero**: Canvas particle animation that interacts with mouse hover and multi-touch gestures.
 - **Dynamic Bento Collage**: Interactive photo and achievements collage with tilted interactive cards and floating badges.
 - **3D Interactive Carousels**: 3D cylindrical carousels showcasing Team Members and Community Contributors.
-- **Events & Workshops Hub**: Filterable catalog of events (Technical, Hackathons, Workshops) with detailed modals and registrations.
+- **Events & Workshops Hub**: Filterable catalog of events (Technical, Hackathons, Workshops, Upcoming) with detailed modals and photo galleries.
 - **Student Applications & Contact Forms**: Direct club join requests and query handling with validation and rate limiting.
 - **Dedicated Protected Admin Panel**:
   - Full CRUD control for Events, Team Members, Community Contributors, Activities, Domains, Applications, and Messages.
@@ -111,7 +162,7 @@ Follow these step-by-step instructions to get the complete project running local
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/Melroy25/Cipher.git cipher-website
+git clone https://github.com/Melroy25/cipher-buildblazer.git cipher-website
 cd cipher-website
 ```
 
@@ -140,9 +191,6 @@ VITE_FIREBASE_APP_ID="your-app-id"
 # Allowed administrator Google accounts (comma-separated):
 VITE_ADMIN_EMAILS="your-email@gmail.com"
 ```
-
-> **Where to get Firebase client keys**:
-> Go to [Firebase Console](https://console.firebase.google.com) → Select your project → ⚙️ **Project Settings** → **General** tab → Scroll down to **Your apps** → Click your Web App (`</>`) to see the credentials.
 
 ---
 
@@ -196,54 +244,34 @@ ADMIN_EMAILS="your-email@gmail.com"
 
 ### Step 3: Install Dependencies
 
-Open two terminal windows (one for frontend, one for backend):
-
-#### Terminal 1 — Frontend:
 ```bash
 npm install
-```
-
-#### Terminal 2 — Backend:
-```bash
-cd server
-npm install
+cd server && npm install && cd ..
 ```
 
 ---
 
 ### Step 4: Database Setup & Initial Seeding
 
-From inside the `server/` directory:
-
 ```bash
 cd server
-
-# Generate the Prisma Client
 npx prisma generate
-
-# Push the schema to your PostgreSQL database
 npx prisma db push
-
-# (Optional) Seed the database with initial events, team members, and content
 npm run seed
+cd ..
 ```
 
 ---
 
 ### Step 5: Start Development Servers
 
-#### Terminal 1 — Start the Backend (Port 4000):
 ```bash
-cd server
-npm run dev
-```
-*You should see:* `[Cipher API] Server running on http://localhost:4000`
+# Terminal 1: Backend (Port 4000)
+cd server && npm run dev
 
-#### Terminal 2 — Start the Frontend (Port 3000):
-```bash
+# Terminal 2: Frontend (Port 3000)
 npm run dev -- --port 3000
 ```
-*You should see:* `VITE v8.x.x ready in ... ms ➜ Local: http://localhost:3000/`
 
 ---
 
@@ -262,91 +290,10 @@ npm run dev -- --port 3000
 
 1. Navigate directly to `http://localhost:3000/admin`.
 2. Click **"Continue with Google"**.
-3. Select an authorized Google account.
-4. If your email is listed in `ADMIN_EMAILS` / `VITE_ADMIN_EMAILS`, you are granted immediate access to the dashboard.
-5. If an unauthorized Google account attempts sign-in, access is denied immediately both on the client and on the server via HTTP 403 Forbidden.
-
-### Adding New Administrators
-To grant admin privileges to additional people:
-1. Open `.env` (frontend) and `server/.env` (backend).
-2. Append the new email to `VITE_ADMIN_EMAILS` and `ADMIN_EMAILS`, separated by a comma:
-   ```env
-   VITE_ADMIN_EMAILS="melroyalmeida6@gmail.com,newadmin@sjec.ac.in"
-   ADMIN_EMAILS="melroyalmeida6@gmail.com,newadmin@sjec.ac.in"
-   ```
-3. Restart the servers.
-
----
-
-## 📦 Build & Production Verification Commands
-
-To verify that all production bundles compile cleanly without errors:
-
-```bash
-# Build public website bundle
-npm run build:main
-
-# Build admin dashboard bundle
-npm run build:admin
-
-# Build full unified production distribution
-npm run build
-
-# Verify backend TypeScript compilation
-cd server
-npm run build
-```
-
----
-
-## ☁️ Future Deployment Guidelines (Vercel + Backend Host)
-
-When you are ready to deploy to production:
-
-### 1. Frontend on Vercel
-- Connect this GitHub repository to Vercel.
-- Framework Preset: **Vite**.
-- Build Command: `npm run build`.
-- Output Directory: `dist`.
-- Set Environment Variables in Vercel Dashboard:
-  - `VITE_API_URL`: Your deployed backend URL (e.g., `https://api.cipherclub.in`).
-  - All `VITE_FIREBASE_*` variables from `.env`.
-  - `VITE_ADMIN_EMAILS`: Authorized administrator email addresses.
-
-### 2. Backend on Render / Railway / Fly.io
-- Connect the `server` directory to your hosting platform.
-- Build Command: `npm install && npx prisma generate && npm run build`.
-- Start Command: `npm run start`.
-- Set Environment Variables in your backend host dashboard:
-  - `DATABASE_URL`: Production PostgreSQL connection string.
-  - `FRONTEND_URL`: Production frontend URL.
-  - `ADMIN_EMAILS`: Authorized administrator emails.
-  - `FIREBASE_PROJECT_ID`: Your Firebase project ID.
-  - `FIREBASE_CLIENT_EMAIL`: Email from `firebase-service-account.json`.
-  - `FIREBASE_PRIVATE_KEY`: Private key string from `firebase-service-account.json`.
-
----
-
-## ❓ Troubleshooting
-
-### 1. "Firebase: Error (auth/unauthorized-domain)"
-- **Cause**: The current domain or port is not listed in your Firebase authorized domains.
-- **Fix**: Open Firebase Console → Authentication → Settings tab → Authorized domains → Add `localhost`.
-
-### 2. "Access Denied: [email] is not an authorized administrator"
-- **Cause**: The Google account you logged in with does not match the `ADMIN_EMAILS` list.
-- **Fix**: Verify your email spelling in `.env` and `server/.env`. Make sure both files match and have no extra spaces.
-
-### 3. "Database connection failed" or Prisma errors
-- **Cause**: `DATABASE_URL` is incorrect or the database requires an SSL connection.
-- **Fix**: Ensure your connection string includes `?sslmode=require` if using Neon or Supabase.
-
-### 4. Admin routes returning 401 Unauthorized
-- **Cause**: Backend cannot verify the Firebase ID token because `GOOGLE_APPLICATION_CREDENTIALS` is missing or invalid.
-- **Fix**: Confirm that `server/firebase-service-account.json` exists and that `GOOGLE_APPLICATION_CREDENTIALS="./firebase-service-account.json"` is set in `server/.env`.
+3. Select an authorized Google account listed in `ADMIN_EMAILS` / `VITE_ADMIN_EMAILS`.
 
 ---
 
 ## 📄 License & Credits
 
-Developed by and for the **CIPHER Club**, Department of Computer Science & Engineering, St Joseph Engineering College, Vamanjoor, Mangaluru, Karnataka, India.
+Developed by and for the **CIPHER Club**, Department of Computer Science & Engineering, St Joseph Engineering College, Vamanjoor, Mangaluru, Karnataka, India in collaboration with **AgentBlazer Club**.
