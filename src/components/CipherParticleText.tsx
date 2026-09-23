@@ -85,12 +85,13 @@ export const CipherParticleText: React.FC = () => {
       particles.length = 0;
       offCtx.clearRect(0, 0, width, height);
 
-      const maxPossibleWidth = width - 24;
+      const isMobile = width < 640;
+      const maxPossibleWidth = width - (isMobile ? 12 : 24);
 
-      // Start with a font size that fills the canvas vertically (desktop style),
+      // Start with a font size that fills the canvas vertically (scaled larger on mobile),
       // but shrink it until the full CIPHER text fits horizontally.
-      const maxFontSize = Math.min(Math.round(height * 0.86), 235);
-      let fontSize = Math.max(30, maxFontSize);
+      const maxFontSize = Math.min(Math.round(height * (isMobile ? 0.92 : 0.86)), 240);
+      let fontSize = Math.max(34, maxFontSize);
 
       offCtx.textBaseline = "middle";
 
@@ -104,13 +105,13 @@ export const CipherParticleText: React.FC = () => {
         offCtx.font = `900 ${fontSize}px "Arial Black", Impact, "Segoe UI Black", "Inter", sans-serif`;
         letterWidths = letters.map((letter) => offCtx.measureText(letter).width);
         sumWidths = letterWidths.reduce((s, v) => s + v, 0);
-        letterGap = Math.max(4, Math.round(fontSize * 0.07));
+        letterGap = Math.max(isMobile ? 3 : 4, Math.round(fontSize * (isMobile ? 0.05 : 0.07)));
         const totalWidth = sumWidths + letterGap * (letters.length - 1);
         if (totalWidth <= maxPossibleWidth) break;
-        fontSize = Math.max(24, Math.round(fontSize * 0.92)); // shrink 8% each step
+        fontSize = Math.max(26, Math.round(fontSize * 0.93)); // shrink gently
       }
 
-      letterGap = Math.max(4, Math.round(fontSize * 0.07));
+      letterGap = Math.max(isMobile ? 3 : 4, Math.round(fontSize * (isMobile ? 0.05 : 0.07)));
       const naturalTotalWidth = sumWidths + letterGap * (letters.length - 1);
 
       // Center horizontally, vertically center in canvas
@@ -127,9 +128,10 @@ export const CipherParticleText: React.FC = () => {
       const image = offCtx.getImageData(0, 0, Math.round(width), Math.round(height));
       const data = image.data;
 
-      const stepY = Math.max(8, Math.round(fontSize / 17));
-      const stepX = Math.max(6, Math.round(fontSize / 20));
-      const charSize = Math.max(6, Math.round(stepY * 0.78));
+      // On mobile, keep glyphs larger and crisper so CIPHER is bold and readable
+      const stepY = isMobile ? Math.max(9, Math.round(fontSize / 13)) : Math.max(8, Math.round(fontSize / 17));
+      const stepX = isMobile ? Math.max(7, Math.round(fontSize / 16)) : Math.max(6, Math.round(fontSize / 20));
+      const charSize = isMobile ? Math.max(8.5, Math.round(stepY * 0.95)) : Math.max(6, Math.round(stepY * 0.78));
 
       const startY = (height % stepY) / 2 + stepY / 2;
       const startX = (width % stepX) / 2 + stepX / 2;
@@ -150,9 +152,9 @@ export const CipherParticleText: React.FC = () => {
               vy: 0,
               char: randomChar(),
               size: charSize,
-              baseAlpha: 0.65 + Math.random() * 0.35,
+              baseAlpha: isMobile ? 0.85 + Math.random() * 0.15 : 0.65 + Math.random() * 0.35,
               colorVariation,
-              brightness: 0.6 + Math.random() * 0.4,
+              brightness: isMobile ? 0.75 + Math.random() * 0.25 : 0.6 + Math.random() * 0.4,
               phase: Math.random() * Math.PI * 2,
             });
           }
@@ -318,32 +320,33 @@ export const CipherParticleText: React.FC = () => {
         const isDisplaced = displacement > 2.5;
 
         if (isDark) {
-          let alpha = Math.min(1, p.baseAlpha * p.brightness + shimmer);
+          const isMobileDevice = width < 640;
+          let alpha = Math.min(1, (isMobileDevice ? 0.92 : p.baseAlpha) * p.brightness + shimmer);
           if (isDisplaced) {
-            alpha = Math.min(1, alpha + 0.25);
+            alpha = Math.min(1, alpha + 0.3);
           }
           ctx.globalAlpha = alpha;
-          ctx.font = `${p.size}px monospace`;
+          ctx.font = `bold ${p.size}px monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          if (p.brightness > 0.88) {
-            // Bright luminous matrix highlight glyphs seen in reference image
-            ctx.fillStyle = "#bbf7d0";
+          if (p.brightness > 0.85) {
+            // Bright electric highlight glyphs
+            ctx.fillStyle = "#ffffff";
             ctx.shadowColor = "#00ff88";
-            ctx.shadowBlur = isDisplaced ? 8 : 4;
+            ctx.shadowBlur = isMobileDevice ? 15 : (isDisplaced ? 10 : 5);
           } else if (p.colorVariation === "neon") {
-            ctx.fillStyle = "#00ff88";
+            ctx.fillStyle = "#39ff14"; // Electric neon lime green
             ctx.shadowColor = "#00ff66";
-            ctx.shadowBlur = isDisplaced ? 6 : 2;
+            ctx.shadowBlur = isMobileDevice ? 14 : (isDisplaced ? 9 : 4);
           } else if (p.colorVariation === "emerald") {
-            ctx.fillStyle = "#10b981";
-            ctx.shadowColor = "#10b981";
-            ctx.shadowBlur = isDisplaced ? 5 : 1;
-          } else {
-            ctx.fillStyle = "#34d399";
+            ctx.fillStyle = "#00ff66"; // Cyber green
             ctx.shadowColor = "#00ff66";
-            ctx.shadowBlur = isDisplaced ? 5 : 2;
+            ctx.shadowBlur = isMobileDevice ? 12 : (isDisplaced ? 7 : 3);
+          } else {
+            ctx.fillStyle = "#4ade80"; // Bright emerald
+            ctx.shadowColor = "#00ff88";
+            ctx.shadowBlur = isMobileDevice ? 12 : (isDisplaced ? 8 : 4);
           }
         } else {
           // LIGHT MODE: High-contrast, bold font, solid opacity & deep rich emerald tones

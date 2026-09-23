@@ -59,7 +59,9 @@ export const About: React.FC = () => {
   const [aboutTitle, setAboutTitle] = useState("Who we are");
   const { displayText, ref } = useScrambleText(aboutTitle);
   const sectionRef = useRef<HTMLElement>(null);
+  const mobilePhotosRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [mobilePhotosInView, setMobilePhotosInView] = useState(false);
 
   const [aboutText, setAboutText] = useState(
     "CIPHER is the student association of the Department of Computer Science & Engineering. It serves as a platform for students to nurture their technical and interpersonal skills through innovative and collaborative activities. The association strives to bridge the gap between academic knowledge and practical application, fostering a community of aspiring professionals dedicated to excellence in computing."
@@ -113,21 +115,38 @@ export const About: React.FC = () => {
     fetchContent();
   }, []);
 
-  // Trigger pop-up only when reaching "Who we are" section
+  // Trigger pop-up when reaching section
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-        } else {
-          setIsInView(false);
-        }
+        setIsInView(entry.isIntersecting);
       },
       {
         threshold: 0.15,
+      }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Dedicated observer for mobile photo collage so it pops up precisely when scrolled into view
+  useEffect(() => {
+    const el = mobilePhotosRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setMobilePhotosInView(true);
+        }
+      },
+      {
+        threshold: 0.12,
+        rootMargin: "0px 0px -40px 0px",
       }
     );
 
@@ -166,10 +185,17 @@ export const About: React.FC = () => {
 
 
             {/* ── Mobile: Aesthetic tilted photo collage with prominent glowing CIPHER wordmark ── */}
-            <div className="block lg:hidden w-full relative pt-2 pb-4">
+            <div ref={mobilePhotosRef} className="block lg:hidden w-full relative pt-2 pb-4">
 
               {/* Prominent Glowing CIPHER Header right above the photos (fills the awkward gap) */}
-              <div className="flex items-center justify-center mb-5 pointer-events-none select-none">
+              <div
+                className="flex items-center justify-center mb-5 pointer-events-none select-none transition-all duration-500"
+                style={{
+                  transform: mobilePhotosInView ? "scale(1) translateY(0)" : "scale(0.85) translateY(20px)",
+                  opacity: mobilePhotosInView ? 1 : 0,
+                  transition: "transform 0.6s cubic-bezier(0.34,1.56,0.64,1), opacity 0.45s ease",
+                }}
+              >
                 <span
                   className="text-5xl sm:text-6xl font-black tracking-widest text-emerald-600 dark:text-[#00ff66] dark:text-glow-lg transition-all"
                   style={{
@@ -184,17 +210,18 @@ export const About: React.FC = () => {
                 </span>
               </div>
 
-              {/* Bento photo grid with real aesthetic tilts and clear image quality */}
+              {/* Bento photo grid with spring pop-up effect on scroll */}
               <div className="relative z-10 grid grid-cols-5 grid-rows-3 gap-2.5 h-[320px] sm:h-[360px] px-2">
 
                 {/* Big feature photo — left col×3, row×2 with aesthetic tilt */}
                 <div
-                  className="relative col-span-3 row-span-2 rounded-2xl overflow-hidden shadow-[0_12px_28px_rgba(0,0,0,0.7)] transition-transform duration-300"
+                  className="relative col-span-3 row-span-2 rounded-2xl overflow-hidden shadow-[0_12px_28px_rgba(0,0,0,0.7)]"
                   style={{
                     border: theme === "dark" ? "2px solid rgba(0,255,102,0.45)" : "2px solid rgba(5,150,105,0.35)",
-                    transform: isInView ? "scale(1) rotate(-3deg)" : "scale(0.88) rotate(-3deg)",
-                    opacity: isInView ? 1 : 0,
-                    transition: "transform 0.65s cubic-bezier(0.34,1.56,0.64,1) 0ms, opacity 0.45s ease 0ms",
+                    transform: mobilePhotosInView ? "scale(1) rotate(-3deg) translateY(0)" : "scale(0) rotate(-10deg) translateY(50px)",
+                    opacity: mobilePhotosInView ? 1 : 0,
+                    transition: "transform 0.75s cubic-bezier(0.34,1.56,0.64,1) 0ms, opacity 0.5s ease 0ms",
+                    willChange: "transform, opacity",
                   }}
                 >
                   <img
@@ -208,12 +235,13 @@ export const About: React.FC = () => {
 
                 {/* Top-right small photo with opposite tilt */}
                 <div
-                  className="relative col-span-2 row-span-1 rounded-xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.6)] transition-transform duration-300"
+                  className="relative col-span-2 row-span-1 rounded-xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
                   style={{
                     border: theme === "dark" ? "2px solid rgba(0,255,102,0.4)" : "2px solid rgba(5,150,105,0.3)",
-                    transform: isInView ? "scale(1) rotate(4deg)" : "scale(0.88) rotate(4deg)",
-                    opacity: isInView ? 1 : 0,
-                    transition: "transform 0.65s cubic-bezier(0.34,1.56,0.64,1) 120ms, opacity 0.45s ease 120ms",
+                    transform: mobilePhotosInView ? "scale(1) rotate(4deg) translateY(0)" : "scale(0) rotate(10deg) translateY(50px)",
+                    opacity: mobilePhotosInView ? 1 : 0,
+                    transition: "transform 0.75s cubic-bezier(0.34,1.56,0.64,1) 120ms, opacity 0.5s ease 120ms",
+                    willChange: "transform, opacity",
                   }}
                 >
                   <img
@@ -227,12 +255,13 @@ export const About: React.FC = () => {
 
                 {/* Middle-right small photo with counter tilt */}
                 <div
-                  className="relative col-span-2 row-span-1 rounded-xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.6)] transition-transform duration-300"
+                  className="relative col-span-2 row-span-1 rounded-xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
                   style={{
                     border: theme === "dark" ? "2px solid rgba(0,255,102,0.4)" : "2px solid rgba(5,150,105,0.3)",
-                    transform: isInView ? "scale(1) rotate(-3deg)" : "scale(0.88) rotate(-3deg)",
-                    opacity: isInView ? 1 : 0,
-                    transition: "transform 0.65s cubic-bezier(0.34,1.56,0.64,1) 220ms, opacity 0.45s ease 220ms",
+                    transform: mobilePhotosInView ? "scale(1) rotate(-3deg) translateY(0)" : "scale(0) rotate(-10deg) translateY(50px)",
+                    opacity: mobilePhotosInView ? 1 : 0,
+                    transition: "transform 0.75s cubic-bezier(0.34,1.56,0.64,1) 240ms, opacity 0.5s ease 240ms",
+                    willChange: "transform, opacity",
                   }}
                 >
                   <img
@@ -246,12 +275,13 @@ export const About: React.FC = () => {
 
                 {/* Bottom panoramic strip with subtle tilt */}
                 <div
-                  className="relative col-span-5 row-span-1 rounded-xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.65)] transition-transform duration-300"
+                  className="relative col-span-5 row-span-1 rounded-xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.65)]"
                   style={{
                     border: theme === "dark" ? "2px solid rgba(0,255,102,0.35)" : "2px solid rgba(5,150,105,0.25)",
-                    transform: isInView ? "scale(1) rotate(1.5deg)" : "scale(0.88) rotate(1.5deg)",
-                    opacity: isInView ? 1 : 0,
-                    transition: "transform 0.65s cubic-bezier(0.34,1.56,0.64,1) 320ms, opacity 0.45s ease 320ms",
+                    transform: mobilePhotosInView ? "scale(1) rotate(1.5deg) translateY(0)" : "scale(0) rotate(5deg) translateY(50px)",
+                    opacity: mobilePhotosInView ? 1 : 0,
+                    transition: "transform 0.75s cubic-bezier(0.34,1.56,0.64,1) 360ms, opacity 0.5s ease 360ms",
+                    willChange: "transform, opacity",
                   }}
                 >
                   <img

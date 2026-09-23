@@ -58,8 +58,8 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
       lastTime = now;
 
       if (!document.hidden && !isDraggingRef.current) {
-        if (Math.abs(velocityRef.current) > 0.0005) {
-          velocityRef.current *= 0.93;
+        if (Math.abs(velocityRef.current) > 0.0003) {
+          velocityRef.current *= 0.955; // Silky fluid momentum with natural glide
           angleRef.current += velocityRef.current * (dt / 16);
         } else {
           velocityRef.current = 0;
@@ -79,9 +79,10 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
 
   const hasDraggedRef = useRef(false);
   const totalDragDistanceRef = useRef(0);
+  const lastTimeRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Pointer drag to spin the 3D ring
+  // Pointer drag to spin the 3D ring with fast, responsive touch support
   const handlePointerDown = (e: React.PointerEvent) => {
     isDraggingRef.current = true;
     hasDraggedRef.current = false;
@@ -89,28 +90,47 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
     velocityRef.current = 0;
     startXRef.current = e.clientX;
     lastXRef.current = e.clientX;
+    lastTimeRef.current = performance.now();
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
+    const now = performance.now();
+    const dt = Math.max(8, now - lastTimeRef.current);
     const dx = e.clientX - lastXRef.current;
     totalDragDistanceRef.current += Math.abs(dx);
-    if (totalDragDistanceRef.current > 5) {
+    if (totalDragDistanceRef.current > 4) {
       hasDraggedRef.current = true;
     }
-    lastXRef.current = e.clientX;
 
-    const deltaAngle = (dx / radius.rx) * 0.9;
+    // Touch devices require higher angle velocity multiplier for fast, responsive finger swipes
+    const isTouch = e.pointerType === "touch" || window.innerWidth < 768;
+    const sensitivity = isTouch ? 2.5 : 1.4;
+    const deltaAngle = (dx / radius.rx) * sensitivity;
+
     angleRef.current += deltaAngle;
-    velocityRef.current = deltaAngle * 0.35;
     setAngle(angleRef.current);
+
+    // Exponential moving average for flick release velocity
+    const instantVelocity = (deltaAngle / dt) * 16;
+    velocityRef.current = velocityRef.current * 0.35 + instantVelocity * 0.65;
+
+    lastXRef.current = e.clientX;
+    lastTimeRef.current = now;
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+
+    // Boost flick momentum on touch release so a quick finger flick spins the cards fast
+    const isTouch = e.pointerType === "touch" || window.innerWidth < 768;
+    if (isTouch) {
+      velocityRef.current = Math.max(-0.11, Math.min(0.11, velocityRef.current * 1.45));
+    }
+
     setTimeout(() => {
       hasDraggedRef.current = false;
       totalDragDistanceRef.current = 0;

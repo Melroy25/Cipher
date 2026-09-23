@@ -154,13 +154,15 @@ export const HomeEvents: React.FC = () => {
             <div className="font-mono text-sm tracking-widest text-emerald-600 dark:text-[#00ff66] mb-3 font-bold">
               // GATHERINGS & SESSIONS
             </div>
-            <h2
-              ref={ref}
-              className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight font-sans text-black dark:text-white"
-              style={{ color: theme === "dark" ? "#ffffff" : "#000000" }}
-            >
-              {displayText}
-            </h2>
+            <div className="min-h-[76px] sm:min-h-[auto] flex items-center mb-1">
+              <h2
+                ref={ref}
+                className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight font-sans text-black dark:text-white leading-tight"
+                style={{ color: theme === "dark" ? "#ffffff" : "#000000" }}
+              >
+                {displayText}
+              </h2>
+            </div>
             <p className="mt-3 font-sans text-sm sm:text-base text-gray-600 dark:text-[#88aa90] max-w-xl">
               Flagship hackathons, hands-on technical bootcamps, and department galas hosted by Cipher.
             </p>

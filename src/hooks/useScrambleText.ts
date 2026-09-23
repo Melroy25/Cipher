@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-const CHARS = "!<>-_\\/[]{}—=+*^?#________0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#@*&$!";
 
 export function useScrambleText(targetText: string, triggerOnView: boolean = true) {
   const [displayText, setDisplayText] = useState(targetText);
