@@ -24,6 +24,7 @@ import contactRoutes from "./routes/contact.routes.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 4000;
 
 // Middleware

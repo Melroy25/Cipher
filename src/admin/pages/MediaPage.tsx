@@ -58,19 +58,24 @@ export const MediaPage: React.FC = () => {
 
   const handleDelete = async () => {
     if (!deleteId) return;
+    const targetId = deleteId;
+    setDeleteId(null);
     try {
-      const res = await adminFetch(`/api/admin/media/${deleteId}`, {
+      const res = await adminFetch(`/api/admin/media/${targetId}`, {
         method: "DELETE",
-        });
+      });
       if (res.ok) {
         success("Media asset deleted.");
-        setDeleteId(null);
-        loadMedia();
+        // Optimistic UI update: immediately remove from local state
+        setAssets((prev) => prev.filter((a) => a.id !== targetId));
       } else {
-        error("Failed to delete media asset.");
+        const data = await res.json().catch(() => ({}));
+        error(data.message || "Failed to delete media asset.");
+        loadMedia();
       }
     } catch {
       error("Network error deleting media.");
+      loadMedia();
     }
   };
 
@@ -87,26 +92,53 @@ export const MediaPage: React.FC = () => {
   const deselectAll = () => setSelectedIds(new Set());
 
   const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
     setIsBulkDeleting(true);
-    let failed = 0;
-    for (const id of Array.from(selectedIds)) {
-      try {
-        const res = await adminFetch(`/api/admin/media/${id}`, { method: "DELETE" });
-        if (!res.ok) failed++;
-      } catch {
-        failed++;
+    const idsToDelete = Array.from(selectedIds);
+    const selectedSet = new Set(selectedIds);
+
+    try {
+      // Send single bulk-delete request
+      const res = await adminFetch("/api/admin/media/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: idsToDelete }),
+      });
+
+      if (res.ok) {
+        success(`Successfully deleted ${idsToDelete.length} asset(s).`);
+        setAssets((prev) => prev.filter((a) => !selectedSet.has(a.id)));
+        setSelectedIds(new Set());
+        setSelectMode(false);
+        setConfirmBulkDelete(false);
+      } else {
+        // Fallback if backend bulk route is not yet deployed (e.g., during transition)
+        let failed = 0;
+        for (const id of idsToDelete) {
+          try {
+            const delRes = await adminFetch(`/api/admin/media/${id}`, { method: "DELETE" });
+            if (!delRes.ok) failed++;
+          } catch {
+            failed++;
+          }
+        }
+        if (failed === 0) {
+          success(`Successfully deleted ${idsToDelete.length} asset(s).`);
+          setAssets((prev) => prev.filter((a) => !selectedSet.has(a.id)));
+        } else {
+          error(`Deleted with ${failed} failure(s). Refreshing...`);
+          loadMedia();
+        }
+        setSelectedIds(new Set());
+        setSelectMode(false);
+        setConfirmBulkDelete(false);
       }
+    } catch {
+      error("Network error during bulk delete.");
+      loadMedia();
+    } finally {
+      setIsBulkDeleting(false);
     }
-    setIsBulkDeleting(false);
-    setConfirmBulkDelete(false);
-    setSelectedIds(new Set());
-    setSelectMode(false);
-    if (failed === 0) {
-      success(`Deleted ${selectedIds.size} asset(s) successfully.`);
-    } else {
-      error(`Deleted with ${failed} failure(s). Refresh to check.`);
-    }
-    loadMedia();
   };
 
   const exitSelectMode = () => {
@@ -265,14 +297,20 @@ export const MediaPage: React.FC = () => {
                     {!selectMode && (
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <button
-                          onClick={() => copyUrl(item.id, item.url)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyUrl(item.id, item.url);
+                          }}
                           className="p-2 rounded bg-[#00ff66] text-black font-mono text-xs hover:bg-[#00e65b] transition-colors"
                           title="Copy URL"
                         >
                           {copiedId === item.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         </button>
                         <button
-                          onClick={() => setDeleteId(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteId(item.id);
+                          }}
                           className="p-2 rounded bg-red-600 text-white hover:bg-red-500 transition-colors"
                           title="Delete"
                         >

@@ -13,8 +13,16 @@ export const loginLimiter = rateLimit({
 
 export const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 120, // 120 requests per minute
+  max: 1000, // 1000 requests per minute
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Never rate-limit authenticated admin actions or admin endpoints
+    return Boolean(
+      req.originalUrl.includes("/api/admin") ||
+      req.path.startsWith("/admin") ||
+      req.headers.authorization?.startsWith("Bearer ")
+    );
+  },
 });
 

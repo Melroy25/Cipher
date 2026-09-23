@@ -64,14 +64,60 @@ export async function handleDeleteMedia(req: Request, res: Response) {
     }
 
     if (asset.publicId) {
-      await deleteImage(asset.publicId);
+      try {
+        await deleteImage(asset.publicId);
+      } catch (err) {
+        console.error("Failed to delete asset file:", err);
+      }
     }
 
     await prisma.mediaAsset.delete({ where: { id } });
 
     return res.json({ success: true, message: "Media deleted successfully." });
-  } catch (err) {
-    return res.status(500).json({ success: false, message: "Failed to delete media asset." });
+  } catch (err: any) {
+    console.error("Single delete error:", err);
+    return res.status(500).json({ success: false, message: err.message || "Failed to delete media asset." });
   }
 }
+
+export async function handleBulkDeleteMedia(req: Request, res: Response) {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "No media IDs provided." });
+    }
+
+    // Find assets so we can clean up any stored files
+    const assets = await prisma.mediaAsset.findMany({
+      where: { id: { in: ids } },
+    });
+
+    for (const asset of assets) {
+      if (asset.publicId) {
+        try {
+          await deleteImage(asset.publicId);
+        } catch (e) {
+          console.error("Error deleting image file:", e);
+        }
+      }
+    }
+
+    const deleteResult = await prisma.mediaAsset.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    return res.json({
+      success: true,
+      count: deleteResult.count,
+      message: `Successfully deleted ${deleteResult.count} media asset(s).`,
+    });
+  } catch (err: any) {
+    console.error("Bulk delete error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to bulk delete media assets.",
+    });
+  }
+}
+
 

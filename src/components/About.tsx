@@ -3,11 +3,24 @@ import { useScrambleText } from "../hooks/useScrambleText.ts";
 import { useTheme } from "../context/ThemeContext.tsx";
 
 const DEFAULT_ABOUT_PHOTOS = [
-  "/assets/about/about_1.jpg",
-  "/assets/about/about_2.jpg",
-  "/assets/about/about_3.jpg",
-  "/assets/about/about_4.jpg",
+  "/uploads/1790187729008-1790187721402-285837259.jpg",
+  "/uploads/1790187989630-1790187988686-975632268.jpg",
+  "/uploads/1790187969052-1790187967430-490944588.JPG",
+  "/uploads/1790187956411-1790187954806-134957238.JPG",
 ];
+
+function getInitialAboutPhotos(): string[] {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("cipher_about_photos");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    }
+  } catch {}
+  return DEFAULT_ABOUT_PHOTOS;
+}
 
 // 8 perimeter-oriented layout presets for floating cards so center "CIPHER" is never blocked
 const PHOTO_PRESETS = [
@@ -67,7 +80,7 @@ export const About: React.FC = () => {
     "CIPHER is the student association of the Department of Computer Science & Engineering. It serves as a platform for students to nurture their technical and interpersonal skills through innovative and collaborative activities. The association strives to bridge the gap between academic knowledge and practical application, fostering a community of aspiring professionals dedicated to excellence in computing."
   );
 
-  const [photos, setPhotos] = useState<string[]>(DEFAULT_ABOUT_PHOTOS);
+  const [photos, setPhotos] = useState<string[]>(() => getInitialAboutPhotos());
 
   // Fetch dynamic content and photos
   useEffect(() => {
@@ -105,7 +118,11 @@ export const About: React.FC = () => {
           }
 
           if (loadedPhotos.length > 0) {
-            setPhotos(loadedPhotos.slice(0, 8));
+            const finalPhotos = loadedPhotos.slice(0, 8);
+            setPhotos(finalPhotos);
+            try {
+              sessionStorage.setItem("cipher_about_photos", JSON.stringify(finalPhotos));
+            } catch {}
           }
         }
       } catch {
@@ -229,6 +246,8 @@ export const About: React.FC = () => {
                     alt="Cipher 1"
                     className="w-full h-full object-cover"
                     draggable={false}
+                    loading="eager"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).src = "/assets/about/about_1.jpg"; }}
                   />
                 </div>
@@ -249,6 +268,8 @@ export const About: React.FC = () => {
                     alt="Cipher 2"
                     className="w-full h-full object-cover"
                     draggable={false}
+                    loading="eager"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).src = "/assets/about/about_2.jpg"; }}
                   />
                 </div>
@@ -269,6 +290,8 @@ export const About: React.FC = () => {
                     alt="Cipher 3"
                     className="w-full h-full object-cover"
                     draggable={false}
+                    loading="eager"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).src = "/assets/about/about_3.jpg"; }}
                   />
                 </div>
@@ -289,6 +312,8 @@ export const About: React.FC = () => {
                     alt="Cipher 4"
                     className="w-full h-full object-cover object-center"
                     draggable={false}
+                    loading="eager"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).src = "/assets/about/about_4.jpg"; }}
                   />
                 </div>
