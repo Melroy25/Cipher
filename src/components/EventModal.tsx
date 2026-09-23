@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
@@ -24,13 +24,36 @@ interface EventModalProps {
 export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Swipe / drag / tap state
+  const dragStartX = useRef<number | null>(null);
+  const dragStartY = useRef<number | null>(null);
+  const isDragging = useRef(false);
+  const dragDistance = useRef(0);
+  const [dragOffset, setDragOffset] = useState(0);
+
   useEffect(() => {
     setCurrentSlide(0);
   }, [event]);
 
+  const totalSlides = event?.slides?.length || 0;
+
+  const nextSlide = () => {
+    if (totalSlides > 1) {
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }
+  };
+
+  const prevSlide = () => {
+    if (totalSlides > 1) {
+      setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
     };
     if (event) {
       document.body.classList.add('modal-open');
@@ -42,18 +65,49 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [event, onClose]);
+  }, [event, onClose, totalSlides]);
 
   if (!event) return null;
 
-  const totalSlides = event.slides.length;
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  // ── Pointer drag handlers (mouse + touch via Pointer Events API) ──
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (totalSlides <= 1) return;
+    dragStartX.current = e.clientX;
+    dragStartY.current = e.clientY;
+    dragDistance.current = 0;
+    isDragging.current = true;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
   };
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current || dragStartX.current === null || dragStartY.current === null) return;
+    const dx = e.clientX - dragStartX.current;
+    const dy = e.clientY - dragStartY.current;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dragDistance.current) < 10) return;
+    dragDistance.current = dx;
+    const maxOffset = 80;
+    const clamped = Math.max(-maxOffset, Math.min(maxOffset, dx * 0.55));
+    setDragOffset(clamped);
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+
+    const threshold = 40;
+    if (dragDistance.current < -threshold) {
+      nextSlide();
+    } else if (dragDistance.current > threshold) {
+      prevSlide();
+    } else if (Math.abs(dragDistance.current) < 8) {
+      // Tap or click on photo -> advance to next slide!
+      nextSlide();
+    }
+
+    setDragOffset(0);
+    dragStartX.current = null;
+    dragStartY.current = null;
+    dragDistance.current = 0;
   };
 
   return createPortal(
@@ -111,16 +165,42 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
                 </span>
               </div>
 
-              {/* Slide Image */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900">
-                <img
-                  src={event.slides[currentSlide]}
-                  alt={`${event.title} slide ${currentSlide + 1}`}
-                  className="w-full h-full object-cover transition-opacity duration-300"
-                />
+              {/* Slide Image Track (Tap or Swipe to slide) */}
+              <div
+                className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 select-none"
+                style={{ cursor: totalSlides > 1 ? "pointer" : "default" }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                title={totalSlides > 1 ? "Click or swipe to see next photo" : undefined}
+              >
+                {/* Horizontal slide track with smooth cubic-bezier transition */}
+                <div
+                  className="absolute inset-0 flex"
+                  style={{
+                    transform: `translateX(calc(-${currentSlide * 100}% + ${dragOffset}px))`,
+                    transition: isDragging.current ? "none" : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+                    width: `${totalSlides * 100}%`,
+                  }}
+                >
+                  {event.slides.map((url, i) => (
+                    <div key={i} className="relative flex-shrink-0 h-full" style={{ width: `${100 / totalSlides}%` }}>
+                      <img
+                        src={url}
+                        alt={`${event.title} slide ${i + 1}`}
+                        className="w-full h-full object-cover select-none pointer-events-none"
+                        draggable={false}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/assets/promptops/slide_01.jpg";
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
 
                 {/* Bottom Overlay Badge */}
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent text-white">
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent text-white pointer-events-none">
                   <span className="inline-block font-mono text-[10px] tracking-widest text-[#00ff66] bg-[#00ff66]/15 border border-[#00ff66]/30 px-2 py-0.5 rounded mb-1.5">
                     {event.dateTag}
                   </span>
@@ -131,6 +211,13 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
                     {event.cardSub}
                   </div>
                 </div>
+
+                {/* Swipe hint */}
+                {totalSlides > 1 && (
+                  <div className="absolute top-2 right-2 font-mono text-[9px] text-[#00ff66]/80 tracking-widest pointer-events-none select-none bg-black/50 px-2 py-0.5 rounded backdrop-blur-sm border border-[#00ff66]/20">
+                    TAP OR SWIPE →
+                  </div>
+                )}
               </div>
 
             </div>

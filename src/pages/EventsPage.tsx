@@ -98,6 +98,7 @@ const DEFAULT_EVENTS: EventData[] = [
 ];
 
 const TAG_CONFIG: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
+  UPCOMING: { color: "#ec4899", bg: "bg-pink-500", icon: <Sparkles className="w-3 h-3" /> },
   COMPETITION: { color: "#00ff66", bg: "bg-[#00ff66]", icon: <Trophy className="w-3 h-3" /> },
   "BRANCH ENTRY": { color: "#f59e0b", bg: "bg-amber-500", icon: <Sparkles className="w-3 h-3" /> },
   "BRANCH GALA": { color: "#f59e0b", bg: "bg-amber-500", icon: <Sparkles className="w-3 h-3" /> },

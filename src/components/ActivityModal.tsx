@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, Calendar, ChevronLeft, ChevronRight, Image as ImageIcon, Sparkles } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.tsx";
@@ -23,6 +23,13 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
   const isDark = theme === "dark";
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Swipe / drag state
+  const dragStartX = useRef<number | null>(null);
+  const dragStartY = useRef<number | null>(null);
+  const isDragging = useRef(false);
+  const dragDistance = useRef(0);
+  const [dragOffset, setDragOffset] = useState(0); // live visual offset while dragging
+
   useEffect(() => {
     setCurrentSlide(0);
   }, [activity]);
@@ -30,6 +37,8 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") nextSlide();
+      if (e.key === "ArrowLeft") prevSlide();
     };
     if (activity) {
       document.body.classList.add('modal-open');
@@ -54,15 +63,54 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
   const totalPhotos = photos.length;
 
   const nextSlide = () => {
-    if (totalPhotos > 1) {
-      setCurrentSlide((prev) => (prev + 1) % totalPhotos);
-    }
+    if (totalPhotos > 1) setCurrentSlide((prev) => (prev + 1) % totalPhotos);
   };
 
   const prevSlide = () => {
-    if (totalPhotos > 1) {
-      setCurrentSlide((prev) => (prev - 1 + totalPhotos) % totalPhotos);
+    if (totalPhotos > 1) setCurrentSlide((prev) => (prev - 1 + totalPhotos) % totalPhotos);
+  };
+
+  // ── Pointer drag handlers (mouse + touch via Pointer Events API) ──
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (totalPhotos <= 1) return;
+    dragStartX.current = e.clientX;
+    dragStartY.current = e.clientY;
+    dragDistance.current = 0;
+    isDragging.current = true;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current || dragStartX.current === null || dragStartY.current === null) return;
+    const dx = e.clientX - dragStartX.current;
+    const dy = e.clientY - dragStartY.current;
+    // If primarily vertical drag → let it scroll (don't hijack)
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dragDistance.current) < 10) return;
+    dragDistance.current = dx;
+    // Rubber-band resistance: feel lighter at edges
+    const maxOffset = 80;
+    const clamped = Math.max(-maxOffset, Math.min(maxOffset, dx * 0.55));
+    setDragOffset(clamped);
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+
+    const threshold = 40; // px swipe needed to flip slide
+    if (dragDistance.current < -threshold) {
+      nextSlide();
+    } else if (dragDistance.current > threshold) {
+      prevSlide();
+    } else if (Math.abs(dragDistance.current) < 8) {
+      // Tap or click on photo -> advance to next slide with smooth slide transition
+      nextSlide();
     }
+
+    setDragOffset(0);
+    dragStartX.current = null;
+    dragStartY.current = null;
+    dragDistance.current = 0;
   };
 
   const descriptionParagraphs = activity.description
@@ -149,39 +197,75 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
                   )}
                 </div>
 
-                {/* Photo Viewer */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 flex items-center justify-center">
-                  <img
-                    src={photos[currentSlide]}
-                    alt={`${activity.title} photo ${currentSlide + 1}`}
-                    className="w-full h-full object-cover transition-opacity duration-300"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/assets/promptops/slide_01.jpg";
+                {/* ── Swipeable Photo Viewer (Tap or Swipe to slide) ── */}
+                <div
+                  className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 flex items-center justify-center select-none"
+                  style={{ cursor: totalPhotos > 1 ? "pointer" : "default" }}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  title={totalPhotos > 1 ? "Click or swipe to see next photo" : undefined}
+                >
+                  {/* Slide strip: smooth translateX sliding animation */}
+                  <div
+                    className="absolute inset-0 flex"
+                    style={{
+                      transform: `translateX(calc(-${currentSlide * 100}% + ${dragOffset}px))`,
+                      transition: isDragging.current ? "none" : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+                      width: `${totalPhotos * 100}%`,
                     }}
-                  />
+                  >
+                    {photos.map((url, i) => (
+                      <div key={i} className="relative flex-shrink-0 h-full" style={{ width: `${100 / totalPhotos}%` }}>
+                        <img
+                          src={url}
+                          alt={`${activity.title} photo ${i + 1}`}
+                          className="w-full h-full object-cover select-none pointer-events-none"
+                          draggable={false}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/assets/promptops/slide_01.jpg";
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
 
-                  {/* Navigation Arrows for Multi-image */}
+                  {/* Navigation Arrows */}
                   {totalPhotos > 1 && (
                     <>
                       <button
-                        onClick={prevSlide}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white border border-[#00ff66]/40 hover:scale-105 transition-all"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevSlide();
+                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white border border-[#00ff66]/40 hover:scale-105 transition-all z-10"
                         aria-label="Previous image"
                       >
                         <ChevronLeft className="w-4 h-4 text-[#00ff66]" />
                       </button>
                       <button
-                        onClick={nextSlide}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white border border-[#00ff66]/40 hover:scale-105 transition-all"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextSlide();
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white border border-[#00ff66]/40 hover:scale-105 transition-all z-10"
                         aria-label="Next image"
                       >
                         <ChevronRight className="w-4 h-4 text-[#00ff66]" />
                       </button>
+
+                      {/* Swipe hint label */}
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/50 tracking-widest pointer-events-none select-none bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
+                        TAP OR SWIPE TO EXPLORE →
+                      </div>
                     </>
                   )}
                 </div>
 
-                {/* Thumbnails Row if more than 1 photo */}
+                {/* Thumbnails Row */}
                 {totalPhotos > 1 && (
                   <div className="p-2.5 bg-gray-100 dark:bg-[#020804] border-t border-gray-200 dark:border-[#00ff66]/20 flex items-center gap-2 overflow-x-auto">
                     {photos.map((url, i) => (
@@ -210,3 +294,4 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
     document.body
   );
 };
+

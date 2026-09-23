@@ -83,48 +83,38 @@ export const ContributorsPage: React.FC = () => {
   const isDark = theme === "dark";
 
   const [contributors, setContributors] = useState<ContributorData[]>(DEFAULT_CONTRIBUTORS);
-  const [loading, setLoading] = useState(true);
   const [selectedContributor, setSelectedContributor] = useState<ContributorData | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     async function fetchContributors() {
       try {
-        const res = await fetch("/api/public/contributors");
+        const res = await fetch("/api/public/contributors", { signal: controller.signal });
         if (res.ok) {
           const json = await res.json();
-          if (Array.isArray(json.data) && json.data.length > 0) {
+          if (isMounted && Array.isArray(json.data) && json.data.length > 0) {
             setContributors(json.data);
           }
         }
       } catch {
-        // Fall back to DEFAULT_CONTRIBUTORS
+        // Fall back gracefully to DEFAULT_CONTRIBUTORS (already rendered)
       } finally {
-        setLoading(false);
+        clearTimeout(timeoutId);
       }
     }
     fetchContributors();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pt-2 pb-16 font-sans">
-      {loading ? (
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center space-y-3">
-            <div
-              className={`w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto ${
-                isDark ? "border-[#00ff66]" : "border-emerald-500"
-              }`}
-            />
-            <p
-              className="font-mono text-xs"
-              style={{ color: isDark ? "#88aa90" : "#6b7280" }}
-            >
-              Loading 3D contributor arrays...
-            </p>
-          </div>
-        </div>
-      ) : (
-        <section className="relative">
+      <section className="relative">
           {/* ── Section Header (GDG Style) ─────────────────────────── */}
           <div className="text-center mb-2">
             <h2
@@ -165,7 +155,6 @@ export const ContributorsPage: React.FC = () => {
             onClose={() => setSelectedContributor(null)}
           />
         </section>
-      )}
     </div>
   );
 };

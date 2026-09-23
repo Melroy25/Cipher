@@ -547,10 +547,12 @@ export const EventsPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
                 className="w-full bg-[#020603] border border-[#00ff66]/30 focus:border-[#00ff66] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none"
               >
+                <option value="UPCOMING">UPCOMING</option>
                 <option value="WORKSHOP">WORKSHOP</option>
                 <option value="EVENT">EVENT</option>
                 <option value="BRANCH ENTRY">BRANCH ENTRY</option>
-                {formData.tag && !["WORKSHOP", "EVENT", "BRANCH ENTRY"].includes(formData.tag) && (
+                <option value="COMPETITION">COMPETITION</option>
+                {formData.tag && !["UPCOMING", "WORKSHOP", "EVENT", "BRANCH ENTRY", "COMPETITION"].includes(formData.tag) && (
                   <option value={formData.tag}>{formData.tag}</option>
                 )}
               </select>
