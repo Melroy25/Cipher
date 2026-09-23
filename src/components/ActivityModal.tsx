@@ -32,10 +32,12 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
       if (e.key === "Escape") onClose();
     };
     if (activity) {
+      document.body.classList.add('modal-open');
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
     }
     return () => {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
     };

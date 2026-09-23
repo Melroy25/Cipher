@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, CheckCircle2, Loader2, Sparkles, Send, Shield } from "lucide-react";
 
 interface JoinModalProps {
@@ -22,6 +23,17 @@ export const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose }) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -67,8 +79,8 @@ export const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose }) => {
   const field = (key: keyof typeof formData, val: string) =>
     setFormData((f) => ({ ...f, [key]: val }));
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-fadeIn">
       {/* Backdrop */}
       <div className="fixed inset-0" onClick={onClose} />
 
@@ -285,6 +297,7 @@ export const JoinModal: React.FC<JoinModalProps> = ({ isOpen, onClose }) => {
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

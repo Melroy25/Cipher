@@ -54,6 +54,14 @@
   }
 }
 
+/* Smoothly hide floating navbar when any modal/detail view is active */
+body.modal-open .site-navbar {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -130%) !important;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

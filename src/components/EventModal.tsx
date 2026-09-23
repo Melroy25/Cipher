@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 export interface EventData {
@@ -23,6 +24,26 @@ interface EventModalProps {
 export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [event]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (event) {
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [event, onClose]);
+
   if (!event) return null;
 
   const totalSlides = event.slides.length;
@@ -35,8 +56,8 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/60 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/60 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0" onClick={onClose} />
 
@@ -162,6 +183,7 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -61,7 +61,7 @@ export const Navbar: React.FC = () => {
     <>
       {/* Outer Floating Bar — Sleek Thin Rectangle */}
       <div
-        className={`fixed top-3 md:top-4 left-1/2 -translate-x-1/2 z-50 w-[96%] md:w-[92%] lg:w-[90%] max-w-6xl rounded-lg transition-all duration-300 ${
+        className={`site-navbar fixed top-3 md:top-4 left-1/2 -translate-x-1/2 z-50 w-[96%] md:w-[92%] lg:w-[90%] max-w-6xl rounded-lg transition-all duration-300 ${
           scrolled
             ? "shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,255,102,0.35)] scale-[0.99]"
             : "shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(0,255,102,0.20)]"
