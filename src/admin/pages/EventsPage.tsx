@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { adminFetch } from "../lib/api.ts";
-import { Plus, Edit2, Trash2, Search, Calendar, Image as ImageIcon, Eye, EyeOff, Loader2, PlusCircle, X, Save, Sparkles } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, Image as ImageIcon, Eye, EyeOff, Loader2, PlusCircle, X, Save, Sparkles, CheckSquare, Square, Check } from "lucide-react";
 import { Modal } from "../components/Modal.tsx";
 import { ConfirmDialog } from "../components/ConfirmDialog.tsx";
 import { ImageUploader } from "../components/ImageUploader.tsx";
@@ -75,6 +75,8 @@ export const EventsPage: React.FC = () => {
   });
 
   const [newSlideUrl, setNewSlideUrl] = useState("");
+  const [slideSelectMode, setSlideSelectMode] = useState(false);
+  const [selectedSlideIdxs, setSelectedSlideIdxs] = useState<Set<number>>(new Set());
 
   const { success, error } = useToast();
 
@@ -159,6 +161,8 @@ export const EventsPage: React.FC = () => {
       slides: [],
     });
     setNewSlideUrl("");
+    setSlideSelectMode(false);
+    setSelectedSlideIdxs(new Set());
     setIsModalOpen(true);
   };
 
@@ -192,6 +196,8 @@ export const EventsPage: React.FC = () => {
         .filter(Boolean),
     });
     setNewSlideUrl("");
+    setSlideSelectMode(false);
+    setSelectedSlideIdxs(new Set());
     setIsModalOpen(true);
   };
 
@@ -302,6 +308,26 @@ export const EventsPage: React.FC = () => {
       ...formData,
       slides: formData.slides.filter((_, i) => i !== idx),
     });
+  };
+
+  const toggleSlideSelect = (idx: number) => {
+    setSelectedSlideIdxs((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  const removeSelectedSlides = () => {
+    const toRemove = selectedSlideIdxs;
+    setFormData((prev) => ({
+      ...prev,
+      slides: prev.slides.filter((_, i) => !toRemove.has(i)),
+    }));
+    setSelectedSlideIdxs(new Set());
+    setSlideSelectMode(false);
+    success(`Removed ${toRemove.size} slide${toRemove.size > 1 ? "s" : ""}.`);
   };
 
   const filtered = events.filter(
@@ -630,29 +656,97 @@ export const EventsPage: React.FC = () => {
 
           {/* Slides Gallery Manager */}
           <div className="border-t border-[#00ff66]/15 pt-4">
-            <h4 className="font-mono text-xs text-[#00ff66] uppercase mb-3 flex items-center justify-between">
-              <span>Event Photo Slides Gallery ({formData.slides.length} images)</span>
-            </h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-mono text-xs text-[#00ff66] uppercase">
+                Event Photo Slides Gallery ({formData.slides.length} images)
+              </h4>
+              {formData.slides.length > 0 && (
+                <div className="flex items-center gap-2">
+                  {slideSelectMode ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSlideIdxs(new Set(formData.slides.map((_, i) => i)))}
+                        className="flex items-center gap-1 px-2 py-1 rounded bg-[#020603] border border-[#00ff66]/30 font-mono text-[10px] text-[#00ff66] hover:bg-[#00ff66]/10 transition-colors"
+                      >
+                        <CheckSquare className="w-3 h-3" /> All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSlideIdxs(new Set())}
+                        className="flex items-center gap-1 px-2 py-1 rounded bg-[#020603] border border-[#00ff66]/30 font-mono text-[10px] text-[#88aa90] hover:bg-[#00ff66]/10 transition-colors"
+                      >
+                        <Square className="w-3 h-3" /> None
+                      </button>
+                      {selectedSlideIdxs.size > 0 && (
+                        <button
+                          type="button"
+                          onClick={removeSelectedSlides}
+                          className="flex items-center gap-1 px-2 py-1 rounded bg-red-600 hover:bg-red-500 font-mono text-[10px] text-white font-bold transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" /> Remove ({selectedSlideIdxs.size})
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => { setSlideSelectMode(false); setSelectedSlideIdxs(new Set()); }}
+                        className="px-2 py-1 rounded bg-[#020603] border border-[#00ff66]/20 font-mono text-[10px] text-[#88aa90] hover:text-white transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSlideSelectMode(true)}
+                      className="flex items-center gap-1 px-2 py-1 rounded bg-[#020603] border border-[#00ff66]/30 font-mono text-[10px] text-[#00ff66] hover:bg-[#00ff66]/10 transition-colors"
+                    >
+                      <CheckSquare className="w-3 h-3" /> Select
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Existing Slides Thumbnails */}
             {formData.slides.length > 0 && (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-3 max-h-40 overflow-y-auto p-2 bg-[#020603] rounded-lg border border-[#00ff66]/20">
-                {formData.slides.map((url, i) => (
-                  <div key={i} className="relative group rounded overflow-hidden border border-[#00ff66]/30 aspect-video bg-black">
-                    <img src={url} alt={`Slide ${i + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeSlide(i)}
-                      className="absolute top-0.5 right-0.5 p-0.5 bg-red-600/90 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Remove slide"
+                {formData.slides.map((url, i) => {
+                  const isSlideSelected = selectedSlideIdxs.has(i);
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => slideSelectMode && toggleSlideSelect(i)}
+                      className={`relative group rounded overflow-hidden border aspect-video bg-black transition-all ${
+                        slideSelectMode ? "cursor-pointer" : ""
+                      } ${isSlideSelected ? "border-[#00ff66] ring-1 ring-[#00ff66]/50" : "border-[#00ff66]/30"}`}
                     >
-                      <X className="w-3 h-3" />
-                    </button>
-                    <span className="absolute bottom-0 left-0 bg-black/70 text-[9px] px-1 text-[#00ff66]">
-                      #{i + 1}
-                    </span>
-                  </div>
-                ))}
+                      <img src={url} alt={`Slide ${i + 1}`} className="w-full h-full object-cover" />
+                      {/* Select mode checkbox */}
+                      {slideSelectMode && (
+                        <div className="absolute top-0.5 left-0.5">
+                          <div className={`w-4 h-4 rounded border flex items-center justify-center ${isSlideSelected ? "bg-[#00ff66] border-[#00ff66]" : "bg-black/60 border-white/60"}`}>
+                            {isSlideSelected && <Check className="w-2.5 h-2.5 text-black" />}
+                          </div>
+                        </div>
+                      )}
+                      {/* Normal remove button */}
+                      {!slideSelectMode && (
+                        <button
+                          type="button"
+                          onClick={() => removeSlide(i)}
+                          className="absolute top-0.5 right-0.5 p-0.5 bg-red-600/90 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove slide"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                      <span className="absolute bottom-0 left-0 bg-black/70 text-[9px] px-1 text-[#00ff66]">
+                        #{i + 1}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
