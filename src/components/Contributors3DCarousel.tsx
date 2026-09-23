@@ -3,6 +3,8 @@ import { GithubIcon, LinkedinIcon, InstagramIcon } from "./Icons.tsx";
 import { ContributorData } from "./ContributorDetailModal.tsx";
 import { useTheme } from "../context/ThemeContext.tsx";
 
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'%3E%3Crect width='240' height='240' fill='%2306140a'/%3E%3Ccircle cx='120' cy='85' r='45' fill='%2300ff66' fill-opacity='0.25' stroke='%2300ff66' stroke-width='2'/%3E%3Cpath d='M40 210 c0 -45 35 -75 80 -75 s80 30 80 75' fill='%2300ff66' fill-opacity='0.18' stroke='%2300ff66' stroke-width='2'/%3E%3C/svg%3E";
+
 interface Contributors3DCarouselProps {
   contributors: ContributorData[];
   onSelectContributor: (c: ContributorData) => void;
@@ -225,7 +227,7 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
                   }`}
                 >
                   <img
-                    src={contributor.photoUrl || "/assets/leaders/elston.jpg"}
+                    src={contributor.photoUrl || DEFAULT_AVATAR}
                     alt={contributor.name}
                     width={245}
                     height={160}
@@ -234,7 +236,7 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
                     draggable={false}
                     className="w-full h-full object-cover object-top pointer-events-none select-none"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/assets/leaders/elston.jpg";
+                      (e.target as HTMLImageElement).src = DEFAULT_AVATAR;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

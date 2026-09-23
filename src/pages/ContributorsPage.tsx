@@ -3,13 +3,24 @@ import { Contributors3DCarousel } from "../components/Contributors3DCarousel.tsx
 import { ContributorDetailModal, ContributorData } from "../components/ContributorDetailModal.tsx";
 import { useTheme } from "../context/ThemeContext.tsx";
 
-const DEFAULT_CONTRIBUTORS: ContributorData[] = [];
+const getInitialContributors = (): ContributorData[] => {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("cipher_contributors_cache");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    }
+  } catch {}
+  return [];
+};
 
 export const ContributorsPage: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const [contributors, setContributors] = useState<ContributorData[]>(DEFAULT_CONTRIBUTORS);
+  const [contributors, setContributors] = useState<ContributorData[]>(getInitialContributors);
   const [selectedContributor, setSelectedContributor] = useState<ContributorData | null>(null);
 
   useEffect(() => {
@@ -24,10 +35,13 @@ export const ContributorsPage: React.FC = () => {
           const json = await res.json();
           if (isMounted && Array.isArray(json.data) && json.data.length > 0) {
             setContributors(json.data);
+            try {
+              sessionStorage.setItem("cipher_contributors_cache", JSON.stringify(json.data));
+            } catch {}
           }
         }
       } catch {
-        // Fall back gracefully to DEFAULT_CONTRIBUTORS (already rendered)
+        // Fall back gracefully
       } finally {
         clearTimeout(timeoutId);
       }

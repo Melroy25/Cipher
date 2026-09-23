@@ -26,6 +26,7 @@ interface ContributorDetailModalProps {
 }
 
 const HEX_CHARS = "0123456789ABCDEF!#_<>*%$";
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'%3E%3Crect width='240' height='240' fill='%2306140a'/%3E%3Ccircle cx='120' cy='85' r='45' fill='%2300ff66' fill-opacity='0.25' stroke='%2300ff66' stroke-width='2'/%3E%3Cpath d='M40 210 c0 -45 35 -75 80 -75 s80 30 80 75' fill='%2300ff66' fill-opacity='0.18' stroke='%2300ff66' stroke-width='2'/%3E%3C/svg%3E";
 
 export const ContributorDetailModal: React.FC<ContributorDetailModalProps> = ({
   contributor,
@@ -56,7 +57,10 @@ export const ContributorDetailModal: React.FC<ContributorDetailModalProps> = ({
 
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = contributor.modalPhotoUrl || contributor.photoUrl || "/assets/leaders/elston.jpg";
+    img.src = contributor.modalPhotoUrl || contributor.photoUrl || DEFAULT_AVATAR;
+    img.onerror = () => {
+      img.src = DEFAULT_AVATAR;
+    };
 
     let startTime = 0;
     const TOTAL_DURATION = 1200; // ms
