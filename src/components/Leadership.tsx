@@ -18,7 +18,19 @@ export const Leadership: React.FC = () => {
   const [members, setMembers] = useState<TeamMemberData[]>(() => getCachedTeamMembers());
   const [selectedMember, setSelectedMember] = useState<TeamMemberData | null>(null);
 
+  const [homeYear, setHomeYear] = useState<string>("2026-27");
+
   useEffect(() => {
+    // Fetch dynamic site content for featured home year
+    fetch("/api/public/content")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.map?.home_team_year) {
+          setHomeYear(json.map.home_team_year);
+        }
+      })
+      .catch(() => {});
+
     fetchTeamMembersOptimized().then((data) => {
       if (Array.isArray(data) && data.length > 0) {
         setMembers(data);
@@ -26,13 +38,13 @@ export const Leadership: React.FC = () => {
     });
   }, []);
 
-  // Filter to show only the CURRENT academic year on the home page (e.g. 2025-26)
-  const currentYear = "2025-26";
+  // Filter to show the chosen academic year on the home page (configured in admin CMS)
   const currentYearMembers = members
-    .filter((m) => (m.teamYear || "2025-26") === currentYear)
+    .filter((m) => (m.teamYear || "2026-27") === homeYear)
     .sort((a, b) => a.displayOrder - b.displayOrder);
 
-  const displayList = currentYearMembers.length > 0 ? currentYearMembers : members.slice(0, 5);
+  const displayList = currentYearMembers.length > 0 ? currentYearMembers : members.slice(0, 8);
+
 
   return (
     <section id="leadership" className="relative py-8 sm:py-12 md:py-14 overflow-hidden">
@@ -50,7 +62,7 @@ export const Leadership: React.FC = () => {
             >
               {displayText}{" "}
               <span className="text-emerald-600 dark:text-[#00ff66]">
-                {currentYear}
+                {homeYear}
               </span>
             </h2>
           </div>
@@ -64,12 +76,12 @@ export const Leadership: React.FC = () => {
           </Link>
         </div>
 
-        {/* ── 3D Circular Revolving Carousel (Current Year) ────────────────── */}
+        {/* ── 3D Circular Revolving Carousel (Featured Year) ────────────────── */}
         <div className="w-full flex justify-center">
           <Team3DCarousel
             members={displayList}
             onSelectMember={(m) => setSelectedMember(m)}
-            year={currentYear}
+            year={homeYear}
           />
         </div>
       </div>

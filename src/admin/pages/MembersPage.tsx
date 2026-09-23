@@ -34,7 +34,7 @@ export const MembersPage: React.FC = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Team Page Header Configuration State
+  // Team Page Header & Display Configuration State
   const [headerTitle, setHeaderTitle] = useState("Core Team");
   const [headerSubtitle, setHeaderSubtitle] = useState(
     "The minds shaping Cipher Club's tech culture at SJEC — elected officers and domain leads driving every initiative."
@@ -42,14 +42,17 @@ export const MembersPage: React.FC = () => {
   const [headerPastSubtitle, setHeaderPastSubtitle] = useState(
     "Former office bearers and alumni domain leads who guided the Cipher student association."
   );
+  const [homeTeamYear, setHomeTeamYear] = useState<string>("2026-27");
+  const [teamYearsOrder, setTeamYearsOrder] = useState<string[]>(["2026-27", "2025-26"]);
   const [isSavingHeader, setIsSavingHeader] = useState(false);
+  const [isSavingDisplay, setIsSavingDisplay] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
     name: "",
     role: "",
     department: "Computer Science & Engineering",
-    teamYear: "2025-26",
+    teamYear: "2026-27",
     bio: "",
     photoUrl: "",
     modalPhotoUrl: "",
@@ -71,6 +74,11 @@ export const MembersPage: React.FC = () => {
         if (data.map.team_title) setHeaderTitle(data.map.team_title);
         if (data.map.team_subtitle) setHeaderSubtitle(data.map.team_subtitle);
         if (data.map.team_past_subtitle) setHeaderPastSubtitle(data.map.team_past_subtitle);
+        if (data.map.home_team_year) setHomeTeamYear(data.map.home_team_year);
+        if (data.map.team_years_order) {
+          const parsed = data.map.team_years_order.split(",").map((s: string) => s.trim()).filter(Boolean);
+          if (parsed.length > 0) setTeamYearsOrder(parsed);
+        }
       }
     } catch {}
   };
@@ -86,21 +94,62 @@ export const MembersPage: React.FC = () => {
             { key: "team_title", value: headerTitle, section: "team", label: "Team Main Heading" },
             { key: "team_subtitle", value: headerSubtitle, section: "team", label: "Team Subtitle Description" },
             { key: "team_past_subtitle", value: headerPastSubtitle, section: "team", label: "Past Team Subtitle Description" },
+            { key: "home_team_year", value: homeTeamYear, section: "team", label: "Home Page Core Team Year" },
+            { key: "team_years_order", value: teamYearsOrder.join(","), section: "team", label: "Team Page Years Order" },
           ],
         }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        success("Team page header updated successfully!");
+        success("Team page & display settings saved successfully!");
       } else {
-        error(data.message || "Failed to update header.");
+        error(data.message || "Failed to update settings.");
       }
     } catch {
-      error("Network error updating header.");
+      error("Network error updating settings.");
     } finally {
       setIsSavingHeader(false);
     }
   };
+
+  const saveDisplaySettings = async (overrideHomeYear?: string, overrideOrder?: string[]) => {
+    const yr = overrideHomeYear || homeTeamYear;
+    const ord = (overrideOrder || teamYearsOrder).join(",");
+    try {
+      setIsSavingDisplay(true);
+      const res = await adminFetch("/api/admin/content/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [
+            { key: "home_team_year", value: yr, section: "team", label: "Home Page Core Team Year" },
+            { key: "team_years_order", value: ord, section: "team", label: "Team Page Years Order" },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        success(`Display saved! Home page: ${yr} · Team page order: ${ord}`);
+      } else {
+        error(data.message || "Failed to save display settings.");
+      }
+    } catch {
+      error("Network error saving display settings.");
+    } finally {
+      setIsSavingDisplay(false);
+    }
+  };
+
+  const moveYearOrder = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= teamYearsOrder.length) return;
+    const updated = [...teamYearsOrder];
+    const temp = updated[index];
+    updated[index] = updated[target];
+    updated[target] = temp;
+    setTeamYearsOrder(updated);
+  };
+
 
   const loadMembers = async () => {
     try {
@@ -236,11 +285,24 @@ export const MembersPage: React.FC = () => {
 
   const [yearFilter, setYearFilter] = useState("ALL");
 
-  const availableYears = ["ALL", ...Array.from(new Set(members.map((m) => m.teamYear || "2025-26"))).sort((a, b) => b.localeCompare(a))];
+  const distinctYears = Array.from(
+    new Set(["2026-27", "2025-26", ...members.map((m) => m.teamYear || "2026-27")])
+  ).sort((a, b) => b.localeCompare(a));
+
+  const availableYears = ["ALL", ...distinctYears];
+
+  useEffect(() => {
+    if (distinctYears.length > 0) {
+      setTeamYearsOrder((prev) => {
+        const missing = distinctYears.filter((y) => !prev.includes(y));
+        return missing.length > 0 ? [...prev, ...missing] : prev;
+      });
+    }
+  }, [members]);
 
   const filteredMembers = members.filter(
     (m) =>
-      (yearFilter === "ALL" || (m.teamYear || "2025-26") === yearFilter) &&
+      (yearFilter === "ALL" || (m.teamYear || "2026-27") === yearFilter) &&
       (m.name.toLowerCase().includes(search.toLowerCase()) ||
         m.role.toLowerCase().includes(search.toLowerCase()) ||
         m.department.toLowerCase().includes(search.toLowerCase()))
@@ -264,16 +326,16 @@ export const MembersPage: React.FC = () => {
         </button>
       </div>
 
-      {/* ── Public Team Page Header Configuration Card ────────────────────── */}
+      {/* ── Public Team Page Header & Display Configuration Card ────────────────────── */}
       <div className="bg-[#030905] border border-[#00ff66]/25 rounded-2xl p-5 md:p-6 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#00ff66]/15">
           <div>
             <h3 className="text-sm sm:text-base font-bold font-mono text-[#00ff66] flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              Public Team Page Header Text
+              Public Team Page &amp; Home Page Display Settings
             </h3>
             <p className="font-mono text-xs text-[#88aa90]">
-              Customize the heading title and subtitle description displayed above team rosters on the public Team page
+              Configure heading text, choose which core team year is featured on the Home page, and arrange year display order
             </p>
           </div>
           <button
@@ -283,11 +345,12 @@ export const MembersPage: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,255,102,0.25)] hover:shadow-[0_0_20px_rgba(0,255,102,0.4)] disabled:opacity-50 shrink-0"
           >
             {isSavingHeader ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            Save Header Text
+            Save All Settings
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Text descriptions row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block font-mono text-xs text-[#88aa90] uppercase mb-1">
               Main Heading Title
@@ -300,7 +363,7 @@ export const MembersPage: React.FC = () => {
               className="w-full bg-[#020603] border border-[#00ff66]/30 focus:border-[#00ff66] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none"
             />
             <p className="mt-1 font-mono text-[10px] text-[#88aa90]">
-              Year badge (e.g. 2025–26) is attached automatically
+              Year badge (e.g. 2026–27) is attached automatically
             </p>
           </div>
 
@@ -330,24 +393,199 @@ export const MembersPage: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Display options row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[#00ff66]/15">
+          {/* Home Page Featured Year Option */}
+          <div className="bg-[#020603] p-3.5 rounded-xl border border-[#00ff66]/25">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <label className="font-mono text-xs text-[#00ff66] font-bold uppercase flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse" />
+                Home Page Featured Core Team
+              </label>
+              <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#00ff66]/15 text-[#00ff66] border border-[#00ff66]/30 font-bold">
+                Active: {homeTeamYear}
+              </span>
+            </div>
+            <p className="font-mono text-[11px] text-[#88aa90] mb-2.5">
+              Choose which academic year's council is shown in the 3D revolving carousel on the main Home page:
+            </p>
+            <div className="flex items-center gap-2">
+              <select
+                value={homeTeamYear}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setHomeTeamYear(val);
+                }}
+                className="flex-1 bg-[#041006] text-[#00ff66] font-mono font-bold text-xs border border-[#00ff66]/40 focus:border-[#00ff66] rounded-lg px-3 py-2 focus:outline-none cursor-pointer"
+              >
+                {distinctYears.map((yr) => (
+                  <option key={yr} value={yr}>
+                    Core Team {yr} {yr === homeTeamYear ? "★ (Selected for Home Page)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Team Page Year Order Option */}
+          <div className="bg-[#020603] p-3.5 rounded-xl border border-[#00ff66]/25">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <label className="font-mono text-xs text-[#00ff66] font-bold uppercase flex items-center gap-1.5">
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                Team Page Year Display Order
+              </label>
+              <span className="font-mono text-[10px] text-[#88aa90]">
+                Use ◀ ▶ arrows to reorder
+              </span>
+            </div>
+            <p className="font-mono text-[11px] text-[#88aa90] mb-2.5">
+              Order in which year sections are presented from top to bottom on the public /team page:
+            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {teamYearsOrder.map((yr, idx) => (
+                <div
+                  key={yr}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#041006] border border-[#00ff66]/40 text-xs font-mono shadow-sm"
+                >
+                  <span className="text-[#00ff66] font-bold">#{idx + 1}</span>
+                  <span className="text-white font-semibold">{yr}</span>
+                  {idx > 0 && (
+                    <button
+                      type="button"
+                      title="Move up (earlier in page)"
+                      onClick={() => moveYearOrder(idx, -1)}
+                      className="text-[#88aa90] hover:text-[#00ff66] px-1 py-0.5 rounded hover:bg-[#00ff66]/10 font-bold transition-colors"
+                    >
+                      ▲
+                    </button>
+                  )}
+                  {idx < teamYearsOrder.length - 1 && (
+                    <button
+                      type="button"
+                      title="Move down (later in page)"
+                      onClick={() => moveYearOrder(idx, 1)}
+                      className="text-[#88aa90] hover:text-[#00ff66] px-1 py-0.5 rounded hover:bg-[#00ff66]/10 font-bold transition-colors"
+                    >
+                      ▼
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Year Filter Tabs */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {availableYears.map((yr) => (
+      {/* ── Year Filter Tabs & Quick Action Bar (Right where user circled in red) ── */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-3.5 rounded-2xl bg-[#030905] border border-[#00ff66]/25">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-mono text-xs text-[#88aa90] mr-1">Roster Filter:</span>
+          {availableYears.map((yr) => (
+            <button
+              key={yr}
+              onClick={() => setYearFilter(yr)}
+              className={`px-3 py-1.5 rounded-lg font-mono text-xs tracking-wider transition-all border ${
+                yearFilter === yr
+                  ? "bg-[#00ff66] text-black border-[#00ff66] font-bold shadow-[0_0_12px_rgba(0,255,102,0.3)]"
+                  : "bg-[#041006] text-[#88aa90] border-[#00ff66]/20 hover:text-[#00ff66] hover:border-[#00ff66]/50"
+              }`}
+            >
+              {yr === "ALL" ? "All Years" : yr}
+            </button>
+          ))}
+        </div>
+
+        {/* Display Settings Quick Bar */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Quick Home Page Year Dropdown */}
+          <div className="flex items-center gap-2 bg-[#020703] border border-[#00ff66]/35 px-3 py-1.5 rounded-xl">
+            <span className="font-mono text-xs font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
+              <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse" />
+              Home Page Year:
+            </span>
+            <select
+              value={homeTeamYear}
+              onChange={(e) => {
+                const val = e.target.value;
+                setHomeTeamYear(val);
+                saveDisplaySettings(val);
+              }}
+              className="bg-[#041006] text-[#00ff66] font-mono font-bold text-xs border border-[#00ff66]/50 rounded-md px-2.5 py-1 focus:outline-none cursor-pointer"
+            >
+              {distinctYears.map((yr) => (
+                <option key={yr} value={yr}>
+                  {yr}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Quick Team Page Order Buttons */}
+          <div className="flex items-center gap-2 bg-[#020703] border border-[#00ff66]/35 px-3 py-1.5 rounded-xl">
+            <span className="font-mono text-xs font-semibold text-white whitespace-nowrap">
+              Team Page Order:
+            </span>
+            <div className="flex items-center gap-1.5">
+              {teamYearsOrder.map((yr, idx) => (
+                <div
+                  key={yr}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#041006] border border-[#00ff66]/30 text-xs font-mono"
+                >
+                  <span className="text-[#00ff66] font-bold">{idx + 1}.</span>
+                  <span className="text-white">{yr}</span>
+                  {idx > 0 && (
+                    <button
+                      type="button"
+                      title="Move earlier"
+                      onClick={() => {
+                        const updated = [...teamYearsOrder];
+                        const temp = updated[idx];
+                        updated[idx] = updated[idx - 1];
+                        updated[idx - 1] = temp;
+                        setTeamYearsOrder(updated);
+                        saveDisplaySettings(undefined, updated);
+                      }}
+                      className="text-[#88aa90] hover:text-[#00ff66] font-bold px-0.5"
+                    >
+                      ◀
+                    </button>
+                  )}
+                  {idx < teamYearsOrder.length - 1 && (
+                    <button
+                      type="button"
+                      title="Move later"
+                      onClick={() => {
+                        const updated = [...teamYearsOrder];
+                        const temp = updated[idx];
+                        updated[idx] = updated[idx + 1];
+                        updated[idx + 1] = temp;
+                        setTeamYearsOrder(updated);
+                        saveDisplaySettings(undefined, updated);
+                      }}
+                      className="text-[#88aa90] hover:text-[#00ff66] font-bold px-0.5"
+                    >
+                      ▶
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Save Status / Button */}
           <button
-            key={yr}
-            onClick={() => setYearFilter(yr)}
-            className={`px-3.5 py-1.5 rounded-lg font-mono text-xs tracking-wider transition-all border ${
-              yearFilter === yr
-                ? "bg-[#00ff66] text-black border-[#00ff66] font-bold shadow-[0_0_12px_rgba(0,255,102,0.3)]"
-                : "bg-[#041006] text-[#88aa90] border-[#00ff66]/20 hover:text-[#00ff66] hover:border-[#00ff66]/50"
-            }`}
+            type="button"
+            onClick={() => saveDisplaySettings()}
+            disabled={isSavingDisplay}
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-[0_0_12px_rgba(0,255,102,0.25)] hover:shadow-[0_0_18px_rgba(0,255,102,0.4)] disabled:opacity-50 flex items-center gap-1.5"
           >
-            {yr === "ALL" ? "All Years" : yr}
+            {isSavingDisplay ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+            Save Display
           </button>
-        ))}
+        </div>
       </div>
+
 
       {/* Search Bar */}
       <div className="flex items-center gap-4 bg-[#030905] p-3 rounded-xl border border-[#00ff66]/20">

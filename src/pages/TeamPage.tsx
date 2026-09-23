@@ -25,8 +25,10 @@ export const TeamPage: React.FC = () => {
     "Former office bearers and alumni domain leads who guided the Cipher student association."
   );
 
+  const [yearsOrder, setYearsOrder] = useState<string[]>([]);
+
   useEffect(() => {
-    // Fetch dynamic site content for header customizations
+    // Fetch dynamic site content for header customizations and year order
     fetch("/api/public/content")
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
@@ -34,6 +36,13 @@ export const TeamPage: React.FC = () => {
           if (json.map.team_title) setHeaderTitle(json.map.team_title);
           if (json.map.team_subtitle) setHeaderSubtitle(json.map.team_subtitle);
           if (json.map.team_past_subtitle) setHeaderPastSubtitle(json.map.team_past_subtitle);
+          if (json.map.team_years_order) {
+            const order = json.map.team_years_order
+              .split(",")
+              .map((y: string) => y.trim())
+              .filter(Boolean);
+            if (order.length > 0) setYearsOrder(order);
+          }
         }
       })
       .catch(() => {});
@@ -51,10 +60,21 @@ export const TeamPage: React.FC = () => {
     };
   }, []);
 
-  // Extract unique years sorted descending (newest first: 2025-26, 2024-25, etc.)
-  const years = Array.from(
-    new Set(members.map((m) => m.teamYear || "2025-26"))
-  ).sort((a, b) => b.localeCompare(a));
+  // Extract unique years from members
+  const allUniqueYears = Array.from(
+    new Set(members.map((m) => m.teamYear || "2026-27"))
+  );
+
+  // Sort years according to yearsOrder if configured in admin CMS, otherwise descending
+  const years = [...allUniqueYears].sort((a, b) => {
+    const idxA = yearsOrder.indexOf(a);
+    const idxB = yearsOrder.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return b.localeCompare(a);
+  });
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pt-2 pb-16 font-sans">
