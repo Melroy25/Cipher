@@ -20,7 +20,7 @@ export const MessagesPage: React.FC = () => {
 
   const fetchMessages = () => {
     setLoading(true);
-    adminadminFetch("/api/admin/messages")
+    adminFetch("/api/admin/messages")
       .then((r) => r.json())
       .then((d) => { setMessages(d.data || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -29,7 +29,7 @@ export const MessagesPage: React.FC = () => {
   useEffect(() => { fetchMessages(); }, []);
 
   const markRead = async (id: string) => {
-    await adminadminFetch(`/api/admin/messages/${id}/read`, {
+    await adminFetch(`/api/admin/messages/${id}/read`, {
       method: "PATCH",
     });
     fetchMessages();
@@ -37,7 +37,7 @@ export const MessagesPage: React.FC = () => {
 
   const deleteMsg = async (id: string) => {
     if (!window.confirm("Delete this message?")) return;
-    await adminadminFetch(`/api/admin/messages/${id}`, {
+    await adminFetch(`/api/admin/messages/${id}`, {
       method: "DELETE",
     });
     if (selected?.id === id) setSelected(null);
