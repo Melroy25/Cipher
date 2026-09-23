@@ -10,4 +10,6 @@
   cursor: default;
   touch-action: pan-y;
   filter: drop-shadow(0 0 5px rgba(0, 255, 102, 0.22)) drop-shadow(0 0 12px rgba(0, 255, 102, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }

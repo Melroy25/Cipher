@@ -2,100 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Calendar, MapPin, Sparkles, Filter, ArrowRight, Trophy, BookOpen, Layers } from "lucide-react";
 import { EventData, EventModal } from "../components/EventModal.tsx";
 
-const DEFAULT_EVENTS: EventData[] = [
-  {
-    id: "promptops",
-    tag: "COMPETITION",
-    dateTag: "25 MAR 2026",
-    title: "PROMPT OPS-2K26",
-    subTitle: "25 MARCH 2026 · PROMPT ENGINEERING COMPETITION",
-    slug: "PROMPT_OPS",
-    cardSub: "AgentBlazer Club × Cipher",
-    description:
-      "A technical competition on prompt engineering and AI tools by the AgentBlazer Club and Cipher. Track 1 covered invitation, logo and image recreation; Track 2 tested JSON conversion, Python debugging and a Gemini AI security prompt challenge.",
-    fullDescription: [
-      "Organized by the AgentBlazer Club and Cipher under the guidance of Ms. Nisha J Roche, Ms. Jaishma K, and HOD Dr. Melwyn D'Souza, this technical competition focused on prompt engineering and AI tools (mapped to PO4, PO5, PO8, PO11).",
-      "Track 1 (1st Year) featured invitation generation, logo recreation, and image recreation rounds, with Chinmayee, Chris Royston Monteiro, and Deeksha Ravi Moger taking top honors.",
-      "Track 2 (2nd Year) tested students in JSON conversion, Python code debugging, and a Gemini AI security prompt extraction challenge, with Harimurali KS, Venus Suhani D'Lima, and Venisha Snehal D'Souza securing top positions.",
-    ],
-    slides: [
-      "/assets/promptops/slide_01.jpg",
-      "/assets/promptops/slide_02.jpg",
-      "/assets/promptops/slide_03.jpg",
-      "/assets/promptops/slide_04.jpg",
-      "/assets/promptops/slide_05.jpg",
-      "/assets/promptops/slide_06.jpg",
-      "/assets/promptops/slide_07.jpg",
-      "/assets/promptops/slide_08.jpg",
-    ],
-  },
-  {
-    id: "lumiere",
-    tag: "BRANCH GALA",
-    dateTag: "29 OCT 2025",
-    title: "Lumière — The Gala",
-    subTitle: "29 OCTOBER 2025 · KALAM AUDITORIUM",
-    slug: "LUMIERE_GALA",
-    cardSub: "CSE Branch Entry · Kalam Auditorium",
-    description:
-      "The CSE branch entry programme at Kalam Auditorium, themed 'Where Glam Meets Glow.' Organised by the Cipher Association with coordinated red, gold and black décor, it welcomed students into the department and reinforced a shared sense of collective identity.",
-    fullDescription: [
-      "The Department of Computer Science and Engineering (CSE) held its branch entry programme, 'Lumière – The Gala,' on 29 October 2025 at the Kalam Auditorium. Organised by the Cipher Association, the event welcomed students into the department through a formal gathering centred on the theme 'Where Glam Meets Glow.'",
-      "The programme gave students an opportunity to interact with peers and take part in a shared departmental event beyond academics, highlighting the role of the Cipher Association in organising student-led activities. It concluded as a formal branch entry that marked the students' transition into the department and reinforced a sense of collective identity.",
-    ],
-    slides: [
-      "/assets/lumiere/slide_01.jpg",
-      "/assets/lumiere/slide_02.jpg",
-      "/assets/lumiere/slide_03.jpg",
-      "/assets/lumiere/slide_04.jpg",
-      "/assets/lumiere/slide_05.jpg",
-      "/assets/lumiere/slide_06.jpg",
-      "/assets/lumiere/slide_07.jpg",
-      "/assets/lumiere/slide_08.jpg",
-    ],
-  },
-  {
-    id: "solidity-workshop",
-    tag: "WORKSHOP",
-    dateTag: "14 FEB 2026",
-    title: "Smart Contract Dev Bootcamp",
-    subTitle: "14 FEBRUARY 2026 · TECHNICAL SESSION",
-    slug: "SOLIDITY_WORKSHOP",
-    cardSub: "Cipher Technical Domain",
-    description:
-      "A hands-on workshop covering Solidity fundamentals, EVM architecture, gas optimization, and deploying ERC-20 token contracts on the Sepolia testnet. Beginner to intermediate track.",
-    fullDescription: [
-      "Cipher's Technical Domain track hosted an intensive Solidity and Web3 developer crash course for CSE students.",
-      "We started with the Ethereum Virtual Machine (EVM) stack model, memory vs storage vs calldata, and why gas optimization matters when deploying production code.",
-      "Students created their own ERC-20 token contract, wrote automated test suites with Hardhat, and successfully broadcasted deployment transactions to the Sepolia testnet.",
-    ],
-    slides: [
-      "/assets/promptops/slide_01.jpg",
-      "/assets/promptops/slide_02.jpg",
-      "/assets/promptops/slide_03.jpg",
-    ],
-  },
-  {
-    id: "udaan-mock",
-    tag: "CAREER",
-    dateTag: "05 JAN 2026",
-    title: "UDAAN Mock Interview Drive",
-    subTitle: "05 JANUARY 2026 · PLACEMENT PREP",
-    slug: "UDAAN_MOCK",
-    cardSub: "Cipher Senior Council",
-    description:
-      "A three-round mock interview program simulating campus and off-campus technical evaluations. Conducted by Cipher alumni placed in top product companies, covering DSA, system design, and HR rounds.",
-    fullDescription: [
-      "The UDAAN Mock Interview initiative was established to simulate real-world campus recruitment and off-campus tech evaluations.",
-      "Through three rigorous rounds—DSA problem solving, system architecture discussions, and HR behavioral screenings—candidates received real-time constructive feedback from seniors placed in top product companies.",
-      "Key takeaway: Communicate thought processes before writing code. Deep fundamentals in OS, DBMS indexing, and networking protocols matter far more than buzzwords on resumes.",
-    ],
-    slides: [
-      "/assets/lumiere/slide_01.jpg",
-      "/assets/lumiere/slide_02.jpg",
-    ],
-  },
-];
+const DEFAULT_EVENTS: EventData[] = [];
+
 
 const TAG_CONFIG: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
   UPCOMING: { color: "#ec4899", bg: "bg-pink-500", icon: <Sparkles className="w-3 h-3" /> },
@@ -168,6 +76,7 @@ const fetchEventsOptimized = async (): Promise<EventData[]> => {
 export const EventsPage: React.FC = () => {
   // Instant frame-1 render from memory cache
   const [events, setEvents] = useState<EventData[]>(() => getCachedEvents());
+  const [isLoading, setIsLoading] = useState(() => getCachedEvents().length === 0);
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
 
@@ -194,14 +103,20 @@ export const EventsPage: React.FC = () => {
     // Non-blocking background sync
     let isMounted = true;
     fetchEventsOptimized().then((freshEvents) => {
-      if (isMounted && freshEvents && freshEvents.length > 0) {
-        setEvents(freshEvents);
+      if (isMounted) {
+        if (freshEvents && freshEvents.length > 0) {
+          setEvents(freshEvents);
+        }
+        setIsLoading(false);
       }
+    }).catch(() => {
+      if (isMounted) setIsLoading(false);
     });
 
     return () => {
       isMounted = false;
     };
+
   }, []);
 
   const allTags = Array.from(new Set(events.map((e) => e.tag)));
@@ -321,14 +236,23 @@ export const EventsPage: React.FC = () => {
       )}
 
       {filteredEvents.length === 0 && (
-        <div className="text-center py-20 font-sans">
-          <p className="text-4xl mb-4">📅</p>
-          <p className="text-gray-500 dark:text-[#88aa90] text-sm">No events found for this category.</p>
-          <button onClick={() => setActiveFilter("ALL")} className="mt-4 text-emerald-600 dark:text-[#00ff66] text-xs underline font-semibold">
-            Show all events
-          </button>
-        </div>
+        isLoading ? (
+          <div className="py-24 flex items-center justify-center gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.15s]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-bounce" />
+          </div>
+        ) : (
+          <div className="text-center py-20 font-sans">
+            <p className="text-4xl mb-4">📅</p>
+            <p className="text-gray-500 dark:text-[#88aa90] text-sm">No events found for this category.</p>
+            <button onClick={() => setActiveFilter("ALL")} className="mt-4 text-emerald-600 dark:text-[#00ff66] text-xs underline font-semibold">
+              Show all events
+            </button>
+          </div>
+        )
       )}
+
 
       {/* ── Bottom Moving Stats Ticker Bar (GDG-inspired) ─────────────────── */}
       <div className="mt-20 pt-10 border-t border-gray-200 dark:border-[#00ff66]/15 relative">

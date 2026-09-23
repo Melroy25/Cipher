@@ -139,11 +139,14 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
 
   if (total === 0) {
     return (
-      <div className="py-12 text-center text-sm font-mono opacity-60">
-        No contributors found.
+      <div className="py-12 flex items-center justify-center gap-3 text-sm font-mono opacity-50">
+        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]" />
+        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.15s]" />
+        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" />
       </div>
     );
   }
+
 
   return (
     <div className="w-full overflow-hidden">

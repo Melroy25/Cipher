@@ -93,37 +93,23 @@ export const CipherParticleText: React.FC = () => {
       const maxFontSize = Math.min(Math.round(height * (isMobile ? 0.92 : 0.86)), 240);
       let fontSize = Math.max(34, maxFontSize);
 
-      offCtx.textBaseline = "middle";
-
-      // Shrink-to-fit: measure actual rendered width, shrink until it fits
-      let sumWidths = 0;
-      let letterWidths: number[] = [];
-      let letterGap = 0;
-      const letters = "CIPHER".split("");
-
+      // Render "CIPHER" as a single string so the browser handles kerning —
+      // this eliminates the sub-pixel drift from per-letter measureText accumulation
+      // that caused H and E to appear uneven on mobile.
       for (let attempt = 0; attempt < 30; attempt++) {
         offCtx.font = `900 ${fontSize}px "Arial Black", Impact, "Segoe UI Black", "Inter", sans-serif`;
-        letterWidths = letters.map((letter) => offCtx.measureText(letter).width);
-        sumWidths = letterWidths.reduce((s, v) => s + v, 0);
-        letterGap = Math.max(isMobile ? 3 : 4, Math.round(fontSize * (isMobile ? 0.05 : 0.07)));
-        const totalWidth = sumWidths + letterGap * (letters.length - 1);
+        offCtx.textAlign = "center";
+        offCtx.textBaseline = "middle";
+        const totalWidth = offCtx.measureText("CIPHER").width;
         if (totalWidth <= maxPossibleWidth) break;
-        fontSize = Math.max(26, Math.round(fontSize * 0.93)); // shrink gently
+        fontSize = Math.max(26, Math.round(fontSize * 0.93));
       }
 
-      letterGap = Math.max(isMobile ? 3 : 4, Math.round(fontSize * (isMobile ? 0.05 : 0.07)));
-      const naturalTotalWidth = sumWidths + letterGap * (letters.length - 1);
-
-      // Center horizontally, vertically center in canvas
-      let currentX = Math.max(0, (width - naturalTotalWidth) / 2);
       const centerY = height / 2;
 
-      letters.forEach((letter, index) => {
-        offCtx.textAlign = "left";
-        offCtx.fillStyle = "#ffffff";
-        offCtx.fillText(letter, currentX, centerY);
-        currentX += letterWidths[index] + letterGap;
-      });
+      // Draw the full word at once — no manual letter spacing accumulation
+      offCtx.fillStyle = "#ffffff";
+      offCtx.fillText("CIPHER", width / 2, centerY);
 
       const image = offCtx.getImageData(0, 0, Math.round(width), Math.round(height));
       const data = image.data;
@@ -160,7 +146,12 @@ export const CipherParticleText: React.FC = () => {
           }
         }
       }
+
+      // Reveal the canvas now that particles are in their correct positions —
+      // this ensures the initial random-character noise is never visible
+      canvas.style.opacity = "1";
     };
+
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();

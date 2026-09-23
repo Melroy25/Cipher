@@ -170,11 +170,11 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({ activity, onClose 
             </div>
 
             {/* Department / Club Tag Footer */}
-            <div className="mt-8 pt-5 border-t border-gray-100 dark:border-[#00ff66]/15 flex flex-wrap items-center gap-4 text-xs font-mono text-gray-500 dark:text-[#88aa90]">
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-[#00ff66] font-semibold">
-                <Sparkles className="w-3.5 h-3.5" /> Department of CSE · SJEC
+            <div className="mt-8 pt-5 border-t border-gray-100 dark:border-[#00ff66]/15 flex flex-wrap items-center gap-3 text-xs font-mono text-gray-500 dark:text-[#88aa90]">
+              <span className="text-emerald-600 dark:text-[#00ff66] font-semibold">
+                Department of CSE · SJEC
               </span>
-              <span>✦</span>
+              <span className="text-gray-400 dark:text-gray-600">/</span>
               <span>Cipher Student Association</span>
             </div>
           </div>

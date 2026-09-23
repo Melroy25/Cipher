@@ -62,3 +62,4 @@ extracted_assets/
 GDG/
 sheet_*.jpg
 temp_sec_*.jpg
+.vercel
