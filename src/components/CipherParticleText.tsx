@@ -152,9 +152,9 @@ export const CipherParticleText: React.FC = () => {
               vy: 0,
               char: randomChar(),
               size: charSize,
-              baseAlpha: isMobile ? 0.85 + Math.random() * 0.15 : 0.65 + Math.random() * 0.35,
+              baseAlpha: 0.65 + Math.random() * 0.35,
               colorVariation,
-              brightness: isMobile ? 0.75 + Math.random() * 0.25 : 0.6 + Math.random() * 0.4,
+              brightness: 0.6 + Math.random() * 0.4,
               phase: Math.random() * Math.PI * 2,
             });
           }
@@ -296,18 +296,40 @@ export const CipherParticleText: React.FC = () => {
         p.vx += homeDX * 0.015;
         p.vy += homeDY * 0.015;
 
-        // Friction damping creates soft, fluid sand motion with slightly slower reaction
+        // Friction damping creates soft, fluid sand motion
         p.vx *= 0.92;
         p.vy *= 0.92;
 
         p.x += p.vx;
         p.y += p.vy;
 
+        // ── Soft canvas boundary walls ──
+        // Prevents particles from escaping to the edge and getting visually stuck
+        const edgeMargin = p.size + 2;
+        if (p.x < edgeMargin) {
+          p.x = edgeMargin;
+          p.vx = Math.abs(p.vx) * 0.4 + 0.5;
+        }
+        if (p.x > width - edgeMargin) {
+          p.x = width - edgeMargin;
+          p.vx = -Math.abs(p.vx) * 0.4 - 0.5;
+        }
+        if (p.y < edgeMargin) {
+          p.y = edgeMargin;
+          p.vy = Math.abs(p.vy) * 0.4 + 0.5;
+        }
+        if (p.y > height - edgeMargin) {
+          p.y = height - edgeMargin;
+          p.vy = -Math.abs(p.vy) * 0.4 - 0.5;
+        }
+
         // Snap precisely once settled to eliminate idle micro-jitter
+        const postDX = p.originX - p.x;
+        const postDY = p.originY - p.y;
         if (
           Math.abs(p.vx) < 0.01 &&
           Math.abs(p.vy) < 0.01 &&
-          displacement < 0.25
+          Math.hypot(postDX, postDY) < 0.25
         ) {
           p.x = p.originX;
           p.y = p.originY;
@@ -320,33 +342,32 @@ export const CipherParticleText: React.FC = () => {
         const isDisplaced = displacement > 2.5;
 
         if (isDark) {
-          const isMobileDevice = width < 640;
-          let alpha = Math.min(1, (isMobileDevice ? 0.92 : p.baseAlpha) * p.brightness + shimmer);
+          // Restored to original gentle emerald style — slightly more visible than original
+          let alpha = Math.min(1, p.baseAlpha * p.brightness + shimmer);
           if (isDisplaced) {
-            alpha = Math.min(1, alpha + 0.3);
+            alpha = Math.min(1, alpha + 0.2);
           }
           ctx.globalAlpha = alpha;
-          ctx.font = `bold ${p.size}px monospace`;
+          ctx.font = `${p.size}px monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          if (p.brightness > 0.85) {
-            // Bright electric highlight glyphs
-            ctx.fillStyle = "#ffffff";
+          if (p.brightness > 0.88) {
+            ctx.fillStyle = "#bbf7d0";
             ctx.shadowColor = "#00ff88";
-            ctx.shadowBlur = isMobileDevice ? 15 : (isDisplaced ? 10 : 5);
+            ctx.shadowBlur = isDisplaced ? 8 : 4;
           } else if (p.colorVariation === "neon") {
-            ctx.fillStyle = "#39ff14"; // Electric neon lime green
+            ctx.fillStyle = "#00ff88";
             ctx.shadowColor = "#00ff66";
-            ctx.shadowBlur = isMobileDevice ? 14 : (isDisplaced ? 9 : 4);
+            ctx.shadowBlur = isDisplaced ? 6 : 2;
           } else if (p.colorVariation === "emerald") {
-            ctx.fillStyle = "#00ff66"; // Cyber green
-            ctx.shadowColor = "#00ff66";
-            ctx.shadowBlur = isMobileDevice ? 12 : (isDisplaced ? 7 : 3);
+            ctx.fillStyle = "#10b981";
+            ctx.shadowColor = "#10b981";
+            ctx.shadowBlur = isDisplaced ? 5 : 1;
           } else {
-            ctx.fillStyle = "#4ade80"; // Bright emerald
-            ctx.shadowColor = "#00ff88";
-            ctx.shadowBlur = isMobileDevice ? 12 : (isDisplaced ? 8 : 4);
+            ctx.fillStyle = "#34d399";
+            ctx.shadowColor = "#00ff66";
+            ctx.shadowBlur = isDisplaced ? 5 : 2;
           }
         } else {
           // LIGHT MODE: High-contrast, bold font, solid opacity & deep rich emerald tones
