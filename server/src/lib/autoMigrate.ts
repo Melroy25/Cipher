@@ -84,29 +84,28 @@ export async function autoMigrateDatabaseImages() {
       }
     }
 
-    // 2. Fix Event slides with broken /uploads/ URLs
-    const slides = await prisma.eventSlide.findMany();
+    // 2. Fix Event slides with broken /uploads/ URLs (assigning correct sequential slides per event)
+    const slides = await prisma.eventSlide.findMany({
+      include: { event: true },
+    });
     for (const s of slides) {
       if (!s.imageUrl || s.imageUrl.includes("/uploads/")) {
+        const title = (s.event?.title || "").toLowerCase();
+        let fallbackUrl = "/assets/lumiere/slide_01.jpg";
+        if (title.includes("lumière") || title.includes("lumiere")) {
+          const num = String((s.order % 13) + 1).padStart(2, "0");
+          fallbackUrl = `/assets/lumiere/slide_${num}.jpg`;
+        } else if (title.includes("prompt")) {
+          const num = String((s.order % 14) + 1).padStart(2, "0");
+          fallbackUrl = `/assets/promptops/slide_${num}.jpg`;
+        }
+
         await prisma.eventSlide.update({
           where: { id: s.id },
-          data: { imageUrl: "/assets/lumiere/slide_01.jpg" },
+          data: { imageUrl: fallbackUrl },
         });
-        console.log(`[AutoMigrate] Repaired EventSlide [${s.id}] image URL.`);
+        console.log(`[AutoMigrate] Repaired EventSlide [${s.id}] image URL to ${fallbackUrl}.`);
       }
-    }
-
-    // 3. Purge orphaned MediaAsset records pointing to ephemeral /uploads/
-    const assets = await prisma.mediaAsset.findMany();
-    let purgedCount = 0;
-    for (const a of assets) {
-      if (a.url && a.url.includes("/uploads/")) {
-        await prisma.mediaAsset.delete({ where: { id: a.id } });
-        purgedCount++;
-      }
-    }
-    if (purgedCount > 0) {
-      console.log(`[AutoMigrate] Purged ${purgedCount} broken ephemeral MediaAsset records.`);
     }
   } catch (err) {
     console.error("[AutoMigrate] Error verifying database images:", err);
