@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Heart } from "lucide-react";
 import { GithubIcon, LinkedinIcon, InstagramIcon } from "./Icons.tsx";
 import { ContributorData } from "./ContributorDetailModal.tsx";
 import { useTheme } from "../context/ThemeContext.tsx";
@@ -8,11 +9,13 @@ const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 interface Contributors3DCarouselProps {
   contributors: ContributorData[];
   onSelectContributor: (c: ContributorData) => void;
+  isLoading?: boolean;
 }
 
 export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
   contributors,
   onSelectContributor,
+  isLoading = false,
 }) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -140,11 +143,19 @@ export const Contributors3DCarousel: React.FC<Contributors3DCarouselProps> = ({
   };
 
   if (total === 0) {
+    if (isLoading) {
+      return (
+        <div className="py-12 flex items-center justify-center gap-3 text-sm font-mono opacity-50">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]" />
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.15s]" />
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" />
+        </div>
+      );
+    }
     return (
-      <div className="py-12 flex items-center justify-center gap-3 text-sm font-mono opacity-50">
-        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]" />
-        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.15s]" />
-        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" />
+      <div className="py-16 flex flex-col items-center justify-center gap-4 opacity-60">
+        <Heart className="w-12 h-12 text-emerald-500" />
+        <p className="text-sm font-mono text-emerald-400">No contributors yet. Add one!</p>
       </div>
     );
   }

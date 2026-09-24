@@ -55,6 +55,9 @@ export const ContributorDetailModal: React.FC<ContributorDetailModalProps> = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+
     const getMemberModalFallback = (name: string, photo: string) => {
       if (photo && !photo.includes("/uploads/")) return photo;
       const n = name.toLowerCase();

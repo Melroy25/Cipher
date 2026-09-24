@@ -9,7 +9,11 @@ const getInitialContributors = (): ContributorData[] => {
       const stored = sessionStorage.getItem("cipher_contributors_cache");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasFake = parsed.some((c: ContributorData) => !c.name || c.name.toLowerCase().startsWith("unknown"));
+          if (!hasFake) return parsed;
+          sessionStorage.removeItem("cipher_contributors_cache");
+        }
       }
     }
   } catch {}
@@ -22,6 +26,7 @@ export const ContributorsPage: React.FC = () => {
 
   const [contributors, setContributors] = useState<ContributorData[]>(getInitialContributors);
   const [selectedContributor, setSelectedContributor] = useState<ContributorData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,16 +38,18 @@ export const ContributorsPage: React.FC = () => {
         const res = await fetch("/api/public/contributors", { signal: controller.signal });
         if (res.ok) {
           const json = await res.json();
-          if (isMounted && Array.isArray(json.data) && json.data.length > 0) {
-            setContributors(json.data);
+          if (isMounted && Array.isArray(json.data)) {
+            const valid = json.data.filter((c: ContributorData) => c.name && !c.name.toLowerCase().startsWith("unknown"));
+            setContributors(valid);
             try {
-              sessionStorage.setItem("cipher_contributors_cache", JSON.stringify(json.data));
+              sessionStorage.setItem("cipher_contributors_cache", JSON.stringify(valid));
             } catch {}
           }
         }
       } catch {
         // Fall back gracefully
       } finally {
+        if (isMounted) setIsLoading(false);
         clearTimeout(timeoutId);
       }
     }
@@ -87,6 +94,7 @@ export const ContributorsPage: React.FC = () => {
             <Contributors3DCarousel
               contributors={contributors}
               onSelectContributor={(c) => setSelectedContributor(c)}
+              isLoading={isLoading}
             />
           </div>
 
