@@ -4,6 +4,7 @@ import { Upload, Trash2, Copy, Check, ExternalLink, Image as ImageIcon, Loader2,
 import { ImageUploader } from "../components/ImageUploader.tsx";
 import { ConfirmDialog } from "../components/ConfirmDialog.tsx";
 import { useToast } from "../context/ToastContext.tsx";
+import { NEUTRAL_MEDIA_THUMB } from "../../utils/placeholders.ts";
 
 interface MediaAsset {
   id: string;
@@ -274,7 +275,7 @@ export const MediaPage: React.FC = () => {
                       alt={item.filename}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/assets/logo.png";
+                        (e.target as HTMLImageElement).src = NEUTRAL_MEDIA_THUMB;
                       }}
                     />
 

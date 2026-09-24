@@ -5,6 +5,7 @@ import { Modal } from "../components/Modal.tsx";
 import { ConfirmDialog } from "../components/ConfirmDialog.tsx";
 import { ImageUploader } from "../components/ImageUploader.tsx";
 import { useToast } from "../context/ToastContext.tsx";
+import { NEUTRAL_MEMBER_AVATAR } from "../../utils/placeholders.ts";
 
 interface TeamMember {
   id: string;
@@ -647,7 +648,7 @@ export const MembersPage: React.FC = () => {
                           alt={m.name}
                           className="w-10 h-10 rounded-lg object-cover border border-[#00ff66]/30 bg-black"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/assets/logo.png";
+                            (e.target as HTMLImageElement).src = NEUTRAL_MEMBER_AVATAR;
                           }}
                         />
                         <div>

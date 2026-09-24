@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { Upload, X, Image as ImageIcon, Link as LinkIcon, Loader2 } from "lucide-react";
 import { useToast } from "../context/ToastContext.tsx";
 import { adminFetch } from "../lib/api.ts";
+import { NEUTRAL_MEDIA_THUMB } from "../../utils/placeholders.ts";
 
 interface ImageUploaderProps {
   value: string;
@@ -180,7 +181,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 alt="Preview"
                 className="w-12 h-12 rounded object-cover border border-[#00ff66]/30 flex-shrink-0"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/assets/logo.png";
+                  (e.target as HTMLImageElement).src = NEUTRAL_MEDIA_THUMB;
                 }}
               />
               <div className="flex flex-col min-w-0">
