@@ -55,11 +55,25 @@ export const ContributorDetailModal: React.FC<ContributorDetailModalProps> = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = contributor.modalPhotoUrl || contributor.photoUrl || DEFAULT_AVATAR;
+    const getMemberModalFallback = (name: string, photo: string) => {
+      if (photo && !photo.includes("/uploads/")) return photo;
+      const n = name.toLowerCase();
+      if (n.includes("raynell")) return "/assets/leaders/raynell_modal.jpg";
+      if (n.includes("himansh")) return "/assets/leaders/himansh.jpg";
+      if (n.includes("parthipan")) return "/assets/leaders/parthipan.jpg";
+      if (n.includes("nazmin") || n.includes("nazim")) return "/assets/leaders/nazmin.jpg";
+      if (n.includes("chaitra")) return "/assets/leaders/chaitra.jpg";
+      if (n.includes("jeslin")) return "/assets/leaders/jeslin.jpg";
+      if (n.includes("elston")) return "/assets/leaders/elston.jpg";
+      if (n.includes("ruben")) return "/assets/leaders/ruben.jpg";
+      if (n.includes("shamita") || n.includes("shamitha")) return "/assets/leaders/shamitha.jpg";
+      return DEFAULT_AVATAR;
+    };
+
+    const targetSrc = getMemberModalFallback(contributor.name, contributor.modalPhotoUrl || contributor.photoUrl || "");
+    img.src = targetSrc;
     img.onerror = () => {
-      img.src = DEFAULT_AVATAR;
+      img.src = getMemberModalFallback(contributor.name, "");
     };
 
     let startTime = 0;

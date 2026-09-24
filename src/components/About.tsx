@@ -3,10 +3,10 @@ import { useScrambleText } from "../hooks/useScrambleText.ts";
 import { useTheme } from "../context/ThemeContext.tsx";
 
 const DEFAULT_ABOUT_PHOTOS = [
-  "/uploads/1790187729008-1790187721402-285837259.jpg",
-  "/uploads/1790187989630-1790187988686-975632268.jpg",
-  "/uploads/1790187969052-1790187967430-490944588.JPG",
-  "/uploads/1790187956411-1790187954806-134957238.JPG",
+  "/assets/about/about_1.jpg",
+  "/assets/about/about_2.jpg",
+  "/assets/about/about_3.jpg",
+  "/assets/about/about_4.jpg",
 ];
 
 function getInitialAboutPhotos(): string[] {

@@ -216,7 +216,23 @@ export const Team3DCarousel: React.FC<Team3DCarouselProps> = ({
                   }`}
                 >
                   <img
-                    src={member.photoUrl || "/assets/leaders/elston.jpg"}
+                    src={
+                      member.photoUrl && !member.photoUrl.includes("/uploads/")
+                        ? member.photoUrl
+                        : (function(name: string) {
+                            const n = name.toLowerCase();
+                            if (n.includes("raynell")) return "/assets/leaders/raynell.jpg";
+                            if (n.includes("himansh")) return "/assets/leaders/himansh.jpg";
+                            if (n.includes("parthipan")) return "/assets/leaders/parthipan.jpg";
+                            if (n.includes("nazmin") || n.includes("nazim")) return "/assets/leaders/nazmin.jpg";
+                            if (n.includes("chaitra")) return "/assets/leaders/chaitra.jpg";
+                            if (n.includes("jeslin")) return "/assets/leaders/jeslin.jpg";
+                            if (n.includes("elston")) return "/assets/leaders/elston.jpg";
+                            if (n.includes("ruben")) return "/assets/leaders/ruben.jpg";
+                            if (n.includes("shamita") || n.includes("shamitha")) return "/assets/leaders/shamitha.jpg";
+                            return "/assets/leaders/elston.jpg";
+                          })(member.name)
+                    }
                     alt={member.name}
                     width={245}
                     height={160}
@@ -225,7 +241,17 @@ export const Team3DCarousel: React.FC<Team3DCarouselProps> = ({
                     draggable={false}
                     className="w-full h-full object-cover object-top pointer-events-none select-none"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/assets/leaders/elston.jpg";
+                      const n = member.name.toLowerCase();
+                      let fallback = "/assets/leaders/elston.jpg";
+                      if (n.includes("raynell")) fallback = "/assets/leaders/raynell.jpg";
+                      else if (n.includes("himansh")) fallback = "/assets/leaders/himansh.jpg";
+                      else if (n.includes("parthipan")) fallback = "/assets/leaders/parthipan.jpg";
+                      else if (n.includes("nazmin") || n.includes("nazim")) fallback = "/assets/leaders/nazmin.jpg";
+                      else if (n.includes("chaitra")) fallback = "/assets/leaders/chaitra.jpg";
+                      else if (n.includes("jeslin")) fallback = "/assets/leaders/jeslin.jpg";
+                      else if (n.includes("ruben")) fallback = "/assets/leaders/ruben.jpg";
+                      else if (n.includes("shamita") || n.includes("shamitha")) fallback = "/assets/leaders/shamitha.jpg";
+                      (e.target as HTMLImageElement).src = fallback;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

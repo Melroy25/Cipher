@@ -25,8 +25,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Guiding the Cipher Club's strategic direction, student initiatives, and university-wide hackathons.",
-    photoUrl: "/uploads/1789894527450-1789894527442-592799262.PNG",
-    modalPhotoUrl: "/uploads/1789894527450-1789894527442-592799262.PNG",
+    photoUrl: "/assets/leaders/elston.jpg",
+    modalPhotoUrl: "/assets/leaders/elston.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "https://linkedin.com",
@@ -42,8 +42,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Overseeing technical projects, workshop logistics, and collaboration with regional tech chapters.",
-    photoUrl: "/uploads/1790187093436-1790187093023-87601507.png",
-    modalPhotoUrl: "/uploads/1789894632201-1789894632199-393028110.JPG",
+    photoUrl: "/assets/leaders/raynell.jpg",
+    modalPhotoUrl: "/assets/leaders/raynell_modal.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "https://linkedin.com",
@@ -59,8 +59,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Managing club operations, official records, departmental communication, and event scheduling.",
-    photoUrl: "/uploads/1789894702997-1789894702996-571894562.JPG",
-    modalPhotoUrl: "/uploads/1789894702997-1789894702996-571894562.JPG",
+    photoUrl: "/assets/leaders/chaitra.jpg",
+    modalPhotoUrl: "/assets/leaders/chaitra.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "",
@@ -76,8 +76,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Handling financial planning, event allocations, and resource procurement for competitions.",
-    photoUrl: "/uploads/1790187168949-1790187168579-188400283.png",
-    modalPhotoUrl: "/uploads/1790187182567-1790187181538-514894014.png",
+    photoUrl: "/assets/leaders/nazmin.jpg",
+    modalPhotoUrl: "/assets/leaders/nazmin.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "https://instagram.com",
@@ -93,8 +93,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Assisting financial administration, accounts reconciliation, and club funding sponsorships.",
-    photoUrl: "/uploads/1790095282259-1790095282213-154511470.png",
-    modalPhotoUrl: "/uploads/1790095282259-1790095282213-154511470.png",
+    photoUrl: "/assets/leaders/jeslin.jpg",
+    modalPhotoUrl: "/assets/leaders/jeslin.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "",
@@ -110,8 +110,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Leading departmental operations, workshop environments, and infrastructure.",
-    photoUrl: "/uploads/1789894906878-1789894906870-149002953.WEBP",
-    modalPhotoUrl: "/uploads/1789894906878-1789894906870-149002953.WEBP",
+    photoUrl: "/assets/leaders/ruben.jpg",
+    modalPhotoUrl: "/assets/leaders/ruben.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "https://instagram.com",
@@ -127,8 +127,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Directing creative showcases, association galas, and inter-branch cultural events.",
-    photoUrl: "/uploads/1789895013484-1789895013480-405489443.JPG",
-    modalPhotoUrl: "/uploads/1789895013484-1789895013480-405489443.JPG",
+    photoUrl: "/assets/leaders/shamitha.jpg",
+    modalPhotoUrl: "/assets/leaders/shamitha.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "",
@@ -144,8 +144,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Overseeing visual design, cyber aesthetics, posters, and association branding.",
-    photoUrl: "/uploads/1790187220864-1790187220062-107566197.png",
-    modalPhotoUrl: "/uploads/1789894958453-1789894958441-740377590.JPG",
+    photoUrl: "/assets/leaders/himansh.jpg",
+    modalPhotoUrl: "/assets/leaders/himansh.jpg",
     github: "https://github.com",
     linkedin: "https://linkedin.com",
     instagram: "https://instagram.com",
@@ -161,8 +161,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2026-27",
     bio: "Leading editorial documentation, association newsletters, and publication media.",
-    photoUrl: "/uploads/1789895048655-1789895048645-497477966.JPG",
-    modalPhotoUrl: "/uploads/1789895048655-1789895048645-497477966.JPG",
+    photoUrl: "/assets/leaders/parthipan.jpg",
+    modalPhotoUrl: "/assets/leaders/parthipan.jpg",
     github: "",
     linkedin: "",
     instagram: "",
@@ -179,8 +179,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2025-26",
     bio: "Guiding the Cipher Club's strategic direction and university hackathons.",
-    photoUrl: "/uploads/1790187266063-1790187264954-638942508.png",
-    modalPhotoUrl: "/uploads/1790187271881-1790187271510-351563201.png",
+    photoUrl: "/assets/leaders/elston.jpg",
+    modalPhotoUrl: "/assets/leaders/elston.jpg",
     github: "",
     linkedin: "",
     instagram: "",
@@ -196,8 +196,8 @@ export const DEFAULT_TEAM_MEMBERS: TeamMemberData[] = [
     department: "Computer Science & Engineering",
     teamYear: "2025-26",
     bio: "Coordinating technical workshops and operational readiness.",
-    photoUrl: "/uploads/1790187300331-1790187299709-547405059.png",
-    modalPhotoUrl: "/uploads/1790187295730-1790187295104-635022325.png",
+    photoUrl: "/assets/leaders/ruben.jpg",
+    modalPhotoUrl: "/assets/leaders/ruben.jpg",
     github: "",
     linkedin: "",
     instagram: "",
@@ -222,8 +222,12 @@ export function getCachedTeamMembers(): TeamMemberData[] {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          memoryTeamCache = parsed;
-          return parsed;
+          // Verify none of the cached items contain broken ephemeral /uploads/ paths
+          const hasBrokenPath = parsed.some((m: any) => m.photoUrl && m.photoUrl.includes("/uploads/"));
+          if (!hasBrokenPath) {
+            memoryTeamCache = parsed;
+            return parsed;
+          }
         }
       }
     }
@@ -262,28 +266,34 @@ export async function fetchTeamMembersOptimized(): Promise<TeamMemberData[]> {
             name: m.name,
             role: m.role,
             department: m.department || "Computer Science & Engineering",
-            teamYear: m.teamYear || "2025-26",
+            teamYear: m.teamYear || "2026-27",
             bio: m.bio || "",
             photoUrl: m.photoUrl || "/assets/leaders/elston.jpg",
-            modalPhotoUrl: m.modalPhotoUrl || m.photoUrl,
+            modalPhotoUrl: m.modalPhotoUrl || m.photoUrl || "/assets/leaders/elston.jpg",
             github: m.github || "",
             linkedin: m.linkedin || "",
             instagram: m.instagram || "",
+            clearanceLevel: m.role.toUpperCase().includes("PRESIDENT") ? "LEVEL 01 // OVERSEER" : "LEVEL 02 // OPERATIONS",
+            codeName: m.name.substring(0, 4).toUpperCase(),
             displayOrder: m.displayOrder || 0,
-            isActive: m.isActive !== false,
+            isActive: m.isActive ?? true,
           }));
+
           setCachedTeamMembers(mapped);
           return mapped;
         }
       }
     } catch {
-      // Fallback
-    } finally {
-      activeFetchPromise = null;
+      // Fall back gracefully to static DEFAULT_TEAM_MEMBERS
     }
-    return getCachedTeamMembers();
+
+    const cached = getCachedTeamMembers();
+    return cached;
   })();
 
-  return activeFetchPromise;
+  try {
+    return await activeFetchPromise;
+  } finally {
+    activeFetchPromise = null;
+  }
 }
-

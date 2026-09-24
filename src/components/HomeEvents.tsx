@@ -203,11 +203,18 @@ export const HomeEvents: React.FC = () => {
                   {/* Image Thumbnail */}
                   <div className="relative w-full h-44 overflow-hidden bg-gray-100 dark:bg-[#020703]">
                     <img
-                      src={event.slides[0] || "/assets/promptops/slide_01.jpg"}
+                      src={
+                        event.slides[0] ||
+                        (event.title.toLowerCase().includes("lumière") || event.title.toLowerCase().includes("lumiere")
+                          ? "/assets/lumiere/slide_01.jpg"
+                          : "/assets/promptops/slide_01.jpg")
+                      }
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/assets/promptops/slide_01.jpg";
+                        (e.target as HTMLImageElement).src = event.title.toLowerCase().includes("lumière") || event.title.toLowerCase().includes("lumiere")
+                          ? "/assets/lumiere/slide_01.jpg"
+                          : "/assets/promptops/slide_01.jpg";
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70" />

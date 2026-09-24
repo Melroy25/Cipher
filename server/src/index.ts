@@ -22,6 +22,7 @@ import contributorsRoutes from "./routes/contributors.routes.js";
 import applicationsRoutes from "./routes/applications.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
+import { autoMigrateDatabaseImages } from "./lib/autoMigrate.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -125,8 +126,9 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`[Cipher API] Server running on http://localhost:${PORT}`);
+    await autoMigrateDatabaseImages();
   });
 }
 
