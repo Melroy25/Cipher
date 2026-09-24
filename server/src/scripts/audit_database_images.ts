@@ -31,7 +31,7 @@ async function run() {
   const contributors = await prisma.contributor.findMany();
   console.log(`\nContributor count: ${contributors.length}`);
   contributors.forEach((c) => {
-    console.log(` - Contributor [${c.id}] ${c.name}: avatarUrl="${c.avatarUrl}"`);
+    console.log(` - Contributor [${c.id}] ${c.name}: photoUrl="${c.photoUrl}"`);
   });
 }
 
