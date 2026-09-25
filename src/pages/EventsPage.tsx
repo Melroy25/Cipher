@@ -2,8 +2,53 @@ import React, { useState, useEffect } from "react";
 import { Calendar, MapPin, Sparkles, Filter, ArrowRight, Trophy, BookOpen, Layers } from "lucide-react";
 import { EventData, EventModal } from "../components/EventModal.tsx";
 
-const DEFAULT_EVENTS: EventData[] = [];
-
+const DEFAULT_EVENTS: EventData[] = [
+  {
+    id: "cmu8n8hs9000569p49s2q3h3u",
+    tag: "BRANCH ENTRY",
+    dateTag: "29 OCT 2025",
+    title: "Lumière — The Gala",
+    subTitle: "29 OCTOBER 2025 · KALAM AUDITORIUM",
+    slug: "LUMIERE_GALA",
+    cardSub: "CSE Branch Entry · Kalam Auditorium",
+    venue: "Kalam Auditorium",
+    description:
+      "The CSE branch entry programme at Kalam Auditorium, themed “Where Glam Meets Glow.” Organised by the Cipher Association with coordinated red, gold and black décor, it welcomed students into the department and reinforced a shared sense of collective identity.",
+    fullDescription: [
+      "The Department of Computer Science and Engineering (CSE) held its branch entry programme, “Lumière – The Gala,” on 29 October 2025 at the Kalam Auditorium. Organised by the Cipher Association, the event welcomed students into the department through a formal gathering centred on the theme “Where Glam Meets Glow.” The venue featured coordinated red, gold and black décor, floral arrangements, illuminated panels and a central Lumière backdrop.",
+      "The programme gave students an opportunity to interact with peers and take part in a shared departmental event beyond academics, highlighting the role of the Cipher Association in organising student-led activities. It concluded as a formal branch entry that marked the students’ transition into the department and reinforced a sense of collective identity.",
+    ],
+    slides: [
+      "/assets/lumiere/slide_01.jpg",
+      "/assets/lumiere/slide_02.jpg",
+      "/assets/lumiere/slide_03.jpg",
+      "/assets/lumiere/slide_04.jpg",
+      "/assets/lumiere/slide_05.jpg",
+    ],
+  },
+  {
+    id: "cmu8n8iiw000e69p4i44tugxb",
+    tag: "COMPETITION",
+    dateTag: "25 MAR 2026",
+    title: "PROMPT OPS-2K26",
+    subTitle: "25 MARCH 2026 · PROMPT ENGINEERING COMPETITION",
+    slug: "PROMPT_OPS",
+    cardSub: "AgentBlazer Club × Cipher",
+    venue: "St Joseph Engineering College",
+    description:
+      "A technical competition on prompt engineering and AI tools by the AgentBlazer Club and Cipher. Track 1 covered invitation, logo and image recreation; Track 2 tested JSON conversion, Python debugging and a Gemini AI security prompt challenge.",
+    fullDescription: [
+      "Organized by the AgentBlazer Club and Cipher under the guidance of Ms. Nisha J Roche, Ms. Jaishma K, and HOD Dr. Melwyn D'Souza, this technical competition focused on prompt engineering and AI tools.",
+      "The competition challenged students to leverage generative AI models across real-world problem sets including automated schema conversion, visual reconstruction, and secure prompt injection mitigation.",
+    ],
+    slides: [
+      "/assets/promptops/slide_01.jpg",
+      "/assets/promptops/slide_02.jpg",
+      "/assets/promptops/slide_03.jpg",
+      "/assets/promptops/slide_04.jpg",
+    ],
+  },
+];
 
 const TAG_CONFIG: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
   UPCOMING: { color: "#ec4899", bg: "bg-pink-500", icon: <Sparkles className="w-3 h-3" /> },
@@ -21,7 +66,18 @@ let cachedEvents: EventData[] = [...DEFAULT_EVENTS];
 let isEventsFetched = false;
 let eventsFetchPromise: Promise<EventData[]> | null = null;
 
-const getCachedEvents = (): EventData[] => cachedEvents;
+const getCachedEvents = (): EventData[] => {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("cipher_home_events_cache");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    }
+  } catch {}
+  return DEFAULT_EVENTS;
+};
 
 const fetchEventsOptimized = async (): Promise<EventData[]> => {
   if (isEventsFetched) return cachedEvents;
@@ -59,7 +115,12 @@ const fetchEventsOptimized = async (): Promise<EventData[]> => {
                 ? e.slides.map((s: any) => (typeof s === "string" ? s : s.imageUrl))
                 : [e.posterUrl || "/assets/promptops/slide_01.jpg"],
           }));
+
+          cachedEvents = mapped;
           isEventsFetched = true;
+          try {
+            sessionStorage.setItem("cipher_home_events_cache", JSON.stringify(mapped));
+          } catch {}
         }
       }
     } catch {

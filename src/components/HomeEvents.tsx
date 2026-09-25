@@ -18,69 +18,77 @@ const tagCfg = (tag: string) => TAG_CONFIG[tag] || TAG_CONFIG["EVENT"];
 
 const DEFAULT_FALLBACK_EVENTS: EventData[] = [
   {
-    id: "promptops",
+    id: "cmu8n8hs9000569p49s2q3h3u",
+    tag: "BRANCH ENTRY",
+    dateTag: "29 OCT 2025",
+    title: "Lumière — The Gala",
+    subTitle: "29 OCTOBER 2025 · KALAM AUDITORIUM",
+    slug: "LUMIERE_GALA",
+    cardSub: "CSE Branch Entry · Kalam Auditorium",
+    venue: "Kalam Auditorium",
+    description:
+      "The CSE branch entry programme at Kalam Auditorium, themed “Where Glam Meets Glow.” Organised by the Cipher Association with coordinated red, gold and black décor, it welcomed students into the department and reinforced a shared sense of collective identity.",
+    fullDescription: [
+      "The Department of Computer Science and Engineering (CSE) held its branch entry programme, “Lumière – The Gala,” on 29 October 2025 at the Kalam Auditorium. Organised by the Cipher Association, the event welcomed students into the department through a formal gathering centred on the theme “Where Glam Meets Glow.” The venue featured coordinated red, gold and black décor, floral arrangements, illuminated panels and a central Lumière backdrop.",
+      "The programme gave students an opportunity to interact with peers and take part in a shared departmental event beyond academics, highlighting the role of the Cipher Association in organising student-led activities. It concluded as a formal branch entry that marked the students’ transition into the department and reinforced a sense of collective identity.",
+    ],
+    slides: [
+      "/assets/lumiere/slide_01.jpg",
+      "/assets/lumiere/slide_02.jpg",
+      "/assets/lumiere/slide_03.jpg",
+      "/assets/lumiere/slide_04.jpg",
+      "/assets/lumiere/slide_05.jpg",
+    ],
+  },
+  {
+    id: "cmu8n8iiw000e69p4i44tugxb",
     tag: "COMPETITION",
     dateTag: "25 MAR 2026",
     title: "PROMPT OPS-2K26",
     subTitle: "25 MARCH 2026 · PROMPT ENGINEERING COMPETITION",
     slug: "PROMPT_OPS",
     cardSub: "AgentBlazer Club × Cipher",
+    venue: "St Joseph Engineering College",
     description:
-      "A technical competition on prompt engineering and AI tools by the AgentBlazer Club and Cipher.",
+      "A technical competition on prompt engineering and AI tools by the AgentBlazer Club and Cipher. Track 1 covered invitation, logo and image recreation; Track 2 tested JSON conversion, Python debugging and a Gemini AI security prompt challenge.",
     fullDescription: [
       "Organized by the AgentBlazer Club and Cipher under the guidance of Ms. Nisha J Roche, Ms. Jaishma K, and HOD Dr. Melwyn D'Souza, this technical competition focused on prompt engineering and AI tools.",
+      "The competition challenged students to leverage generative AI models across real-world problem sets including automated schema conversion, visual reconstruction, and secure prompt injection mitigation.",
     ],
     slides: [
       "/assets/promptops/slide_01.jpg",
       "/assets/promptops/slide_02.jpg",
       "/assets/promptops/slide_03.jpg",
-    ],
-  },
-  {
-    id: "lumiere",
-    tag: "BRANCH GALA",
-    dateTag: "29 OCT 2025",
-    title: "Lumière — The Gala",
-    subTitle: "29 OCTOBER 2025 · KALAM AUDITORIUM",
-    slug: "LUMIERE_GALA",
-    cardSub: "CSE Branch Entry · Kalam Auditorium",
-    description:
-      "The CSE branch entry programme at Kalam Auditorium, themed 'Where Glam Meets Glow.'",
-    fullDescription: [
-      "The Department of Computer Science and Engineering (CSE) held its branch entry programme, 'Lumière – The Gala,' on 29 October 2025 at the Kalam Auditorium.",
-    ],
-    slides: [
-      "/assets/lumiere/slide_01.jpg",
-      "/assets/lumiere/slide_02.jpg",
-      "/assets/lumiere/slide_03.jpg",
-    ],
-  },
-  {
-    id: "solidity-workshop",
-    tag: "WORKSHOP",
-    dateTag: "14 FEB 2026",
-    title: "Smart Contract Dev Bootcamp",
-    subTitle: "14 FEBRUARY 2026 · TECHNICAL SESSION",
-    slug: "SOLIDITY_WORKSHOP",
-    cardSub: "Cipher Technical Domain",
-    description:
-      "A hands-on workshop covering Solidity fundamentals, EVM architecture, and smart contract deployments.",
-    fullDescription: [
-      "Cipher's Technical Domain track hosted an intensive Solidity and Web3 developer crash course for CSE students.",
-    ],
-    slides: [
-      "/assets/promptops/slide_01.jpg",
-      "/assets/promptops/slide_02.jpg",
+      "/assets/promptops/slide_04.jpg",
     ],
   },
 ];
 
+const getCachedEvents = (): EventData[] => {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("cipher_home_events_cache");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasFake = parsed.some((e: EventData) =>
+            e.id === "solidity-workshop" || e.title.toLowerCase().includes("smart contract")
+          );
+          if (!hasFake) return parsed;
+          sessionStorage.removeItem("cipher_home_events_cache");
+        }
+      }
+    }
+  } catch {}
+  return DEFAULT_FALLBACK_EVENTS;
+};
+
 export const HomeEvents: React.FC = () => {
   const { theme } = useTheme();
   const { displayText, ref } = useScrambleText("Events & Workshops");
-  const [events, setEvents] = useState<EventData[]>([]);
+  const [events, setEvents] = useState<EventData[]>(getCachedEvents);
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadFeaturedEvents() {
@@ -91,11 +99,9 @@ export const HomeEvents: React.FC = () => {
           if (Array.isArray(json.data) && json.data.length > 0) {
             // Filter by featuredOnHome !== false
             let displayable = json.data.filter((e: any) => e.featuredOnHome !== false);
-            // If none marked, take the first 3 or 4
             if (displayable.length === 0) {
               displayable = json.data.slice(0, 3);
             } else {
-              // Cap at 4 items
               displayable = displayable.slice(0, 4);
             }
 
@@ -127,6 +133,9 @@ export const HomeEvents: React.FC = () => {
             }));
 
             setEvents(mapped);
+            try {
+              sessionStorage.setItem("cipher_home_events_cache", JSON.stringify(mapped));
+            } catch {}
             setLoading(false);
             return;
           }
@@ -134,7 +143,6 @@ export const HomeEvents: React.FC = () => {
       } catch {
         // use fallback
       }
-      setEvents(DEFAULT_FALLBACK_EVENTS);
       setLoading(false);
     }
 

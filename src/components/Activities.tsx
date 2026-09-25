@@ -5,29 +5,83 @@ import { useTheme } from '../context/ThemeContext.tsx';
 import { ActivityModal, ActivityItem } from './ActivityModal.tsx';
 
 const DEFAULT_ACTIVITIES_LIST: ActivityItem[] = [
-  { id: '01', numberId: '01', title: 'Applied Machine Learning', description: 'Hands-on exploration of classical ML models, feature engineering, and neural network fundamentals with Python and Scikit-Learn.' },
-  { id: '02', numberId: '02', title: 'Industrial Visit', description: 'Interactive industrial visit connecting students with industry engineering workflows, production servers, and data centers.' },
-  { id: '03', numberId: '03', title: 'LaTeX Tool', description: 'Complete LaTeX typesetting workshop for academic thesis documentation, IEEE research papers, and technical reporting.' },
-  { id: '04', numberId: '04', title: 'Robotic Process Automation using UiPath', description: 'End-to-end automation bot development using UiPath Studio, covering workflow scraping, email triggers, and enterprise automation.' },
-  { id: '05', numberId: '05', title: 'HackTO Future 20', description: '24-hour departmental hackathon centered on decentralized apps, AI solutions, and IoT prototypes.' },
-  { id: '06', numberId: '06', title: 'How to Win at the Sport of Programming', description: 'Competitive programming masterclass covering dynamic programming, graph algorithms, and time complexity optimization.' },
-  { id: '07', numberId: '07', title: 'Introduction to Google Crowdsource', description: 'Community session exploring open data contribution, image labeling, and machine learning model validation with Google.' },
-  { id: '08', numberId: '08', title: 'Educational Session on GitHub', description: 'Git version control bootcamp: branching strategies, collaborative pull requests, merge conflict resolution, and GitHub Actions.' },
-  { id: '09', numberId: '09', title: 'Industrial Visit', description: 'Departmental educational tour exploring cloud infrastructure and agile development methodologies in active tech organizations.' },
-  { id: '10', numberId: '10', title: 'UDAAN Mock Interview', description: 'Simulated campus placement drive with DSA problem-solving rounds, resume reviews, and HR behavioral assessments.' },
-  { id: '11', numberId: '11', title: 'Freshers Onboarding Programme', description: 'Welcoming junior engineers to the CSE department with coding challenges, mentor matching, and tech culture orientation.' },
-  { id: '12', numberId: '12', title: 'Projects Funded by KSCST', description: 'Guidance and mentorship workshop for state council project funding, patent drafting, and student research grants.' },
-  { id: '13', numberId: '13', title: 'Generative AI Tools for Research', description: 'Utilizing modern LLMs, prompt engineering, and literature retrieval tools for scientific paper writing and data analysis.' },
-  { id: '14', numberId: '14', title: 'Introduction to Blockchain: Solidity Workshop', description: 'Smart contract development on EVM, covering ERC-20 token contracts, gas optimization, and testnet deployment.' },
-  { id: '15', numberId: '15', title: 'Star UML', description: 'Software engineering architecture and UML modeling workshop: class diagrams, sequence diagrams, and use case mapping.' },
-  { id: '16', numberId: '16', title: 'Generative AI: Custom Solutions using OpenAI', description: 'Building bespoke AI agents, function calling APIs, and RAG pipelines using OpenAI models and vector databases.' },
-  { id: '17', numberId: '17', title: 'React.js and Node.js Workshop', description: 'Full-stack web engineering workshop building RESTful microservices, state management, and modern component architectures.' },
+  {
+    id: "cmuebzwp5004cdbilqmvfcn9s",
+    numberId: "01",
+    title: "Cse Brach Entry",
+    description:
+      "The programme provided students with an opportunity to interact with peers and take part in a shared departmental event beyond academics. It also highlighted the role of the Cipher Association in organising student-led activities and encouraging participation within the CSE community.",
+    photoUrl: "/assets/lumiere/slide_01.jpg",
+    photos: [
+      "/assets/lumiere/slide_01.jpg",
+      "/assets/lumiere/slide_02.jpg",
+      "/assets/lumiere/slide_03.jpg",
+    ],
+    date: "29 October 2025",
+  },
+  {
+    id: "cmuec1s3y004fdbil00m1eikv",
+    numberId: "02",
+    title: "Competition",
+    description:
+      "Competitive programming contests, hackathons, and technical design challenges organized by the Cipher Association to foster problem-solving skills.",
+    photoUrl: "/assets/promptops/slide_01.jpg",
+    photos: [
+      "/assets/promptops/slide_01.jpg",
+      "/assets/promptops/slide_02.jpg",
+    ],
+    date: "March 25, 2026",
+  },
+  {
+    id: "cmuec3yl8004gdbilaclnstq6",
+    numberId: "03",
+    title: "Events",
+    description:
+      "Departmental flagship events, guest lectures, and student-led collaborative showcases hosted throughout the academic year.",
+    date: "2025-2026",
+  },
+  {
+    id: "cmuec4io8004hdbilrt19p9i9",
+    numberId: "04",
+    title: "Cultural Domains",
+    description:
+      "Creative arts, media production, and cultural engagement initiatives connecting engineering students with expressive pursuits.",
+    date: "2025-2026",
+  },
+  {
+    id: "cmuec50ip004idbil4nhhs2n5",
+    numberId: "05",
+    title: "Talents and Skills",
+    description:
+      "Skill development workshops, peer mentoring circles, and industry preparation bootcamps.",
+    date: "2025-2026",
+  },
 ];
+
+const getCachedActivities = (): ActivityItem[] => {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("cipher_activities_cache");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Invalidate cache if it contains old fake activities
+          const hasFake = parsed.some((a: ActivityItem) =>
+            a.title.toLowerCase().includes("applied machine learning")
+          );
+          if (!hasFake) return parsed;
+          sessionStorage.removeItem("cipher_activities_cache");
+        }
+      }
+    }
+  } catch {}
+  return DEFAULT_ACTIVITIES_LIST;
+};
 
 export const Activities: React.FC = () => {
   const { theme } = useTheme();
   const { displayText, ref } = useScrambleText("Activities");
-  const [activities, setActivities] = useState<ActivityItem[]>(DEFAULT_ACTIVITIES_LIST);
+  const [activities, setActivities] = useState<ActivityItem[]>(getCachedActivities);
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [introDesc, setIntroDesc] = useState(
     "Hands-on workshops, industrial visits, and technical sessions run by the Cipher Association — spanning AI, blockchain, research tooling, and career prep."
@@ -63,6 +117,9 @@ export const Activities: React.FC = () => {
               };
             });
             setActivities(mapped);
+            try {
+              sessionStorage.setItem("cipher_activities_cache", JSON.stringify(mapped));
+            } catch {}
           }
         }
       } catch {}
